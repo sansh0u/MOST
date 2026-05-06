@@ -4,13 +4,13 @@ from yaml_load import get_config
 
 logger = logging.getLogger("toolkit")
 
-def qc_adapt(config):
-    Primer5 = get_config(config, "primer5")
+def qc_adapt(config,result):
+    Adapter = get_config(config, "adapter","AAGCAGTGGTATCAACGCAGAGTGAATGGG")
     CleanFq1 = get_config(config, "file1")
     CleanFq2 = get_config(config, "file2")
     fastq_intput_1 = get_config(config, "dir")+ "/output_R1.fastq"
     fastq_intput_2 = get_config(config, "dir")+ "/output_R2.fastq"
-    rna = get_config(config, "rna_lib")
+    
     """
     QC and adapt the primer to the fastq files.
     Args:
@@ -20,7 +20,7 @@ def qc_adapt(config):
     cmd1 = [
     "cutadapt", "-m", "18", "-a", "A{10}N{150}",
     "--times", "4",
-    "-g", Primer5,
+    "-g", Adapter,
     "-j", "12",
     "-o", CleanFq1,
     "-p", CleanFq2,

@@ -8,7 +8,7 @@ from yaml_load import get_config
 logger = logging.getLogger("toolkit")
 
 
-def bc_pr(config):
+def atac_bc(config):
     '''
     处理BCB_UMI格式的fastq文件,提取UMI和barcode,输出到新的fastq文件
     '''
@@ -22,14 +22,6 @@ def bc_pr(config):
     
     output_file_R1 = get_config(config, "dir") + "/output_R1.fastq"
     output_file_R2 = get_config(config, "dir") + "/output_R2.fastq"
-    
-    #ap = argparse.ArgumentParser()
-    #ap.add_argument("-i", "--input", required=True, help="input file")
-    #ap.add_argument("-o1", "--output_R1", required=True, help="output file R1")
-    #ap.add_argument("-o2", "--output_R2", required=True, help="output file R2")
-    #args = vars(ap.parse_args())
-    #seq_start=117 # 22bp primer  + 8bp BC2 + 30bp linker2 + 8bp BC1 + 30bp linker1 + 19bp ME (chemV2 barcode B no UMI)
-
     
     seq_start = get_config(config, "seq_start")
     bc2_start = get_config(config, "bc2_start")
@@ -59,3 +51,26 @@ def bc_pr(config):
     
     subprocess.run(["pigz", "-p", "12", "-f", output_file_R1], check=True)
     subprocess.run(["pigz", "-p", "12", "-f", output_file_R2], check=True)
+
+def dbit_bc(config):
+    """
+    BC2,BC1,UMI
+    """
+
+    input_file = get_config(config, "dir") + "/linker2_R2.fastq.gz"
+    output_file = get_config(config, "dir") + "/output_R2.fastq"
+    umi_start = get_config(config, "umi_start")
+    bc2_start = get_config(config, "bc2_start")
+    bc2_end = get_config(config, "bc2_end")
+    bc1_start = get_config(config, "bc1_start")
+    bc1_end = get_config(config, "bc1_end")
+
+
+    with gzopen(input_file, "rt") as in_handle:
+        with open(output_file, "w") as out_handle:
+            for title, seq, qual in FastqGeneralIterator(in_handle):
+                new_seq = seq[bc2_start:bc2_end] + seq[bc1_start:bc1_end] + seq[umi_start:umi_start+10]  # BC2 + BC1 + UMI
+                new_qual = qual[bc2_start:bc2_end] + qual[bc1_start:bc1_end] + qual[umi_start:umi_start+10]
+                out_handle.write("@%s\n%s\n+\n%s\n" % (title, new_seq, new_qual))
+    
+    subprocess.run(["pigz", "-p", "12", "-f", output_file], check=True)

@@ -9,9 +9,6 @@ def filter(config):
     """
     根据提供的配置对ATAC-seq数据进行过滤
     """
-     # bbduk写入bin了，直接使用
-    
-
     # Placeholder for actual filtering logic需要校对logo信息
     #logger.info("Starting ATAC-seq quality control filtering...")
     out_dir = get_config(config, "dir")

@@ -1,7 +1,13 @@
-import cv2
 import numpy as np
-import os
+import pandas as pd
+import matplotlib.pyplot as plt
 from pathlib import Path
+import cv2
+import os
+
+# 读取数据
+
+
 
 
 def detect_tissue_pixels(
@@ -90,4 +96,3 @@ def detect_tissue_pixels(
 
     print(f"Detected {len(results)} tissue pixels")
     print(f"Saved to {output_file}")
-

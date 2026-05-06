@@ -72,7 +72,7 @@ def scan_positions_hash(seqs, bc1_set):
 
     return bc1_hits
 
-def scan(config):
+def bc_scan(config):
     """
     扫描 barcode
     """
@@ -102,3 +102,4 @@ def scan(config):
     print(f"bc1_location\t{bc1_loc}\t{ratio[bc1_loc]:.4f}")
     print(f"read_length\t{read_len}")
     return bc2_loc, bc1_loc, read_len
+

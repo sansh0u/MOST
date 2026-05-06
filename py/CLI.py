@@ -1,20 +1,18 @@
-#!/user/bin/env python
+
 import typer
 import os
 import logging
-from yaml_load import load_yaml, get_config, config_cal
-from logger import setup_logger
+from yaml_load import load_yaml, get_config, config_cal,setup_logger
 from DBiT_RNA.run_zUMIs import zUMIs
-from qc import filter
-from ATAC.bc_process import bc_pr
+from preprocess.qc import filter
 from ATAC.chromap import chromap, sort_bed
 from DBiT_RNA.stpipeline import stpipeline
-from DBiT_RNA.bc_pro import bc_pro 
+from preprocess.bc_process import dbit_bc, atac_bc 
 from pathlib import Path
 import yaml
-from Pixel_identification import detect_tissue_pixels
-from scan_bc import scan
-
+from preprocess.visual import detect_tissue_pixels
+from preprocess.scan_bc import scan
+from DBiT_RNA.qc_adapt import qc_adapt
 
 
 app = typer.Typer(help = """
@@ -51,23 +49,26 @@ def run(
     os.makedirs(get_config(config, "dir"), exist_ok=True)
     method = get_config(config, "Method")
     
+
     if method == "ATAC":
-        bc2_loc, bc1_loc, read_len = scan(config)
-        config = config_cal(config, bc2_loc, bc1_loc, read_len)
+        result = scan(config, method)
+        config = config_cal(config, result)
         print(config)
         filter(config)
-        bc_pr(config)
+        atac_bc(config)
         chromap(config)
         sort_bed(config)
 
     elif method == "RNA":
         
-        bc2_loc, bc1_loc, read_len = scan(config)
-        config = config_cal(config, bc2_loc, bc1_loc, read_len)
+        result = scan(config, method)
+        config = config_cal(config, result)
+        qc_adapt(config, result)
         print(config)
-        #filter(config)
-        #bc_pro(config)
+        filter(config)
+        dbit_bc(config)
         stpipeline(config)
+
 
 @app.command(no_args_is_help = True)
 def zumis(

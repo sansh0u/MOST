@@ -19,7 +19,6 @@ def filter(config):
     in2 = get_config(config, "file2")
     k1 = get_config(config, "k1")
     k2 = get_config(config, "k2")
-    hdist = get_config(config, "hdist")
     threads = get_config(config, "Threads")
     linker1 = get_config(config, "linker1")
     linker2 = get_config(config, "linker2")
@@ -32,7 +31,7 @@ def filter(config):
         f"in2={in2}",
         f"outm={out_dir}/linker1_R1.fastq.gz", ####改名字
         f"outm2={out_dir}/linker1_R2.fastq.gz", ####
-        f"hdist={hdist}",
+        f"hdist=3",
         f"k={k1}",
         f"literal={linker1}",
         f"threads={threads}",
@@ -47,7 +46,7 @@ def filter(config):
         f"in2={out_dir}/linker1_R2.fastq.gz",
         f"outm={out_dir}/linker2_R1.fastq.gz", ####
         f"outm2={out_dir}/linker2_R2.fastq.gz", ####
-        f"hdist={hdist}",
+        f"hdist=3",
         f"k={k2}",
         f"literal={linker2}",
         f"threads={config['Threads']}",
@@ -60,9 +59,9 @@ def filter(config):
         "bbduk",
         f"in={in1}", 
         f"in2={in2}",
-        f"outm={out_dir}/linker_R1.fastq.gz", ####改名字
-        f"outm2={out_dir}/linker_R2.fastq.gz", ####
-        f"hdist={hdist}",
+        f"outm={out_dir}/linker2_R1.fastq.gz", ####改名字
+        f"outm2={out_dir}/linker2_R2.fastq.gz", ####
+        f"hdist=3",
         f"k={k2}",
         f"literal={linker2}",
         f"threads={threads}",
@@ -76,7 +75,7 @@ def filter(config):
             subprocess.run(cmd2, check=True)
             subprocess.run(["rm", "-r",f"{out_dir}/linker1_R1.fastq.gz", f"{out_dir}/linker1_R2.fastq.gz"], check=True)
         else:
-            #subprocess.run(cmd3, check=True)
+            subprocess.run(cmd3, check=True)
             print(cmd3)
         #logger.info("ATAC-seq filtering completed successfully.")
         #返回点东西让我知道成功了

@@ -16,7 +16,7 @@ def bc_pro(config):
 #ap.add_argument("-o", "--output", required=True, help="Path to the outputfile")
 #args = vars(ap.parse_args())
 
-    input_file = get_config(config, "dir") + "/linker_R2.fastq.gz"
+    input_file = get_config(config, "dir") + "/linker2_R2.fastq.gz"
     output_file = get_config(config, "dir") + "/output_R2.fastq"
     umi_start = get_config(config, "umi_start")
     bc2_start = get_config(config, "bc2_start")

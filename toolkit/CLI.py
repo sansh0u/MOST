@@ -50,12 +50,11 @@ def run(
     config = load_yaml(config_path)
     os.makedirs(get_config(config, "dir"), exist_ok=True)
     method = get_config(config, "Method")
-    bc2_loc, bc1_loc, read_len = scan(config)
-    config = config_cal(config, bc2_loc, bc1_loc, read_len)
-    print(config)
-
+    
     if method == "ATAC":
-        
+        bc2_loc, bc1_loc, read_len = scan(config)
+        config = config_cal(config, bc2_loc, bc1_loc, read_len)
+        print(config)
         filter(config)
         bc_pr(config)
         chromap(config)
@@ -63,8 +62,11 @@ def run(
 
     elif method == "RNA":
         
-        filter(config)
-        bc_pro(config)
+        bc2_loc, bc1_loc, read_len = scan(config)
+        config = config_cal(config, bc2_loc, bc1_loc, read_len)
+        print(config)
+        #filter(config)
+        #bc_pro(config)
         stpipeline(config)
 
 @app.command(no_args_is_help = True)

@@ -10,17 +10,17 @@ import logging
 logger = logging.getLogger("toolkit")
 
 
-def get_config(config, key, default = None):
+def get_config(config, key, default=None):
     if isinstance(config, dict):
-        if key in config:
+        if key in config and config[key] is not None:
             return config[key]
         for v in config.values():
-            result = get_config(v, key, default = None)
+            result = get_config(v, key, default)
             if result is not None:
                 return result
     elif isinstance(config, list):
         for item in config:
-            result = get_config(item, key, default = None)
+            result = get_config(item, key, default)
             if result is not None:
                 return result
     return default
@@ -90,6 +90,8 @@ def config_cal(config, bc2_loc, bc1_loc, read_len):
     """
     计算配置文件中的参数,如果advance里没有则默认
     """ 
+    bc2_start = bc2_loc 
+    bc1_start = bc1_loc 
     bc2_end = bc2_loc + 8
     bc1_end = bc1_loc + 8 #8bp barcode
     restrictleft1 = bc1_end + 40
@@ -106,27 +108,30 @@ def config_cal(config, bc2_loc, bc1_loc, read_len):
     
     k1 = len(linker1)
     k2 = len(linker2)
-    if bc2_loc == primer + 1:
-        umi_start = bc1_end + k1 + 1
-    elif bc2_loc == primer + 11:
-        umi_start = primer + 1
+    if bc2_loc == primer :
+        umi_start = bc1_end + k1 
+    elif bc2_loc == primer + 10:
+        umi_start = primer 
     else:
         umi_start = get_config(config, "UMI") 
     restrictleft1 = bc1_end + k1 + 10
     restrictleft2 = bc2_end + k2 + 10
     seq_start = bc1_end + k1 + 19
-    config['preprocess'] = {
+    config['Advanced'] = {
         'k1': k1,
         'k2': k2,
-        'bc2_start': bc2_loc,
+        'bc2_start': bc2_start,
         'bc2_end': bc2_end,
-        'bc1_start': bc1_loc,
+        'bc1_start': bc1_start,
         'bc1_end': bc1_end,
         'restrictleft1': restrictleft1,
         'restrictleft2': restrictleft2,
         'seq_start': seq_start,
-        'umi_start': umi_start
+        'umi_start': umi_start,
+        'linker1': linker1,
+        'linker2': linker2
     }
+
     """
     k1 = len(get_config(config, "linker1"))
     k2 = len(get_config(config, "linker2"))

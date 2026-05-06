@@ -1,29 +1,28 @@
 Project: #test
 
-Method: #ATAC/RNA
+Method: RNA #ATAC/RNA
 
 Sequence_file:
-  file1:  /mnt/d/prog/RNA2_1209_Illu_1.fq.gz
+  file1:  /home/sanshou/project/toolkit/output/RNA2_1209_Illu_1.fq.gz
     
-  file2: /mnt/d/KI_1018_50_CKDL240035881-1A_22HM3NLT4_L4_1.fq.gz
-
+  file2: /home/sanshou/project/toolkit/output/RNA2_1209_Illu_2.fq.gz
 Reference:
-  index_file: /home/sansh0u/project/toolkit/toolkit/index/GRCm38.primary_assembly.genome.index
-  fa_file: /home/sansh0u/project/toolkit/toolkit/index/GRCm38.primary_assembly.genome.fa
-  gtf_file: /home/sansh0u/project/toolkit/toolkit/index/gtf/GRCm38.primary_assembly.gtf
-
-Barcode: /home/sansh0u/project/toolkit/toolkit/barcode/20240614_2500barcode_AB_update.txt
+  index_file: /home/sanshou/project/toolkit/toolkit/index/GRCm38.primary_assembly.genome.index
+  fa_file: /home/sanshou/project/toolkit/toolkit/index/human/GRCh38.primary_assembly.genome.fa
+  gtf_file: /home/sanshou/project/toolkit/toolkit/index/human/gencode.v48.primary_assembly.annotation.gtf
+  star_index: /home/sanshou/project/toolkit/star_index1
+Barcode: /home/sanshou/project/toolkit/toolkit/barcode/20240614_2500barcode_AB_update.txt
 
 
 Out_dir:
-  dir: /mnt/d/prog/output
+  dir: /home/sanshou/project/toolkit/output/
 
 Threads: 8
 
 Advanced:
   linker1:
   linker2:
-  primer: #22
+  primer: #CAAGCGTTGGCTTCTCGCATCT
   UMI: #umi起始位置
   hdist: #3
   rna_lib: #pcr/illumina

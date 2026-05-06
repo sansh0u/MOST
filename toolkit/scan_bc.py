@@ -23,11 +23,14 @@ def load_barcodes(path):
 
     with open(path) as f:
         for line in f:
-            s = line.strip().upper()
-            if len(s) != 16:
+
+            parts = line.strip().split()
+            seq = parts[0].upper()
+
+            if len(seq) != 16:
                 continue
 
-            bc1_set.add(encode_kmer(s[8:]))
+            bc1_set.add(encode_kmer(seq[8:]))
 
     return bc1_set
 
@@ -91,8 +94,8 @@ def scan(config):
 # 按位置排序（小→大）
     idx.sort()
 
-    bc2_loc = idx[0] + 1
-    bc1_loc = idx[1] + 1
+    bc2_loc = idx[0] 
+    bc1_loc = idx[1] 
 
     print("\n=== Peak result ===")
     print(f"bc2_location\t{bc2_loc}\t{ratio[bc2_loc]:.4f}")

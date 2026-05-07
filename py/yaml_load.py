@@ -94,9 +94,11 @@ def config_cal(config, result):
 
     bc2_start = result["bc2"]
     bc1_start = result["bc1"]
+    bc_len = result["bc_len"]
     read_len = result["read_len"]
-    bc2_end = bc2_start + 8
-    bc1_end = bc1_start + 8 #8bp barcode
+    bc2_end = bc2_start + bc_len
+    bc1_end = bc1_start + bc_len
+    
     restrictleft1 = bc1_end + 40
     restrictleft2 = bc2_end + 40
     seq_start = bc1_end + 40
@@ -105,9 +107,7 @@ def config_cal(config, result):
     linker2 = get_config(config, "linker2", "ATCCACGTGCTTGAGAGGCCAGAGCATTCG")
     if read_len == 100:
         linker1 = ""
-    if bc2_start == 1:
-        linker1 = "AGATGTGTATAAGAGACAGCATCGGCGTACGACT"
-        linker2 = "CGAATGCTCTGGCCTCTCAAGCACGTGGAT"
+    
     
     k1 = len(linker1)
     k2 = len(linker2)

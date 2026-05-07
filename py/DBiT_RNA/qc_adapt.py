@@ -10,7 +10,7 @@ def qc_adapt(config,result):
     CleanFq2 = get_config(config, "file2")
     fastq_intput_1 = get_config(config, "dir")+ "/output_R1.fastq"
     fastq_intput_2 = get_config(config, "dir")+ "/output_R2.fastq"
-    
+    score = result["score"]
     """
     QC and adapt the primer to the fastq files.
     Args:
@@ -36,10 +36,12 @@ def qc_adapt(config,result):
     fastq_intput_1, fastq_intput_2
 ]
     try: ####
-        if rna == "illumina":
+        if score >= 0.5:
             subprocess.run(cmd1, check=True)
+            print("Trimming adapter")
         else:
             subprocess.run(cmd2, check=True)
+            print("Trimming ployA")
     except subprocess.CalledProcessError as e:
             logger.error(f"Error during DBiT-seq filtering: {e}")
             raise

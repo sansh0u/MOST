@@ -62,12 +62,12 @@ def run(
     elif method == "RNA":
         
         result = scan(config, method)
-        config = config_cal(config, result)
-        qc_adapt(config, result)
-        print(config)
-        filter(config)
-        dbit_bc(config)
-        stpipeline(config)
+        #config = config_cal(config, result)
+        #qc_adapt(config, result)
+        #print(config)
+        #filter(config)
+        #dbit_bc(config)
+        #stpipeline(config)
 
 
 @app.command(no_args_is_help = True)

@@ -11,7 +11,7 @@ from preprocess.bc_process import dbit_bc, atac_bc
 from pathlib import Path
 import yaml
 from preprocess.visual import detect_tissue_pixels
-from preprocess.scan_bc import scan
+from preprocess.scan_bc import scan,global_entropy_profile
 from DBiT_RNA.qc_adapt import qc_adapt
 
 
@@ -62,7 +62,6 @@ def run(
     elif method == "RNA":
         
         result = scan(config, method)
-        #config = config_cal(config, result)
         #qc_adapt(config, result)
         #print(config)
         #filter(config)

@@ -117,30 +117,56 @@ def global_entropy_profile(seqs):
     return entropy_list, "".join(consensus)
 
 
-# -------------------------------
-# 🔥 区块切分（核心新增）
-# -------------------------------
-def segment_by_entropy(entropy, threshold=1.0,jump=0.5, min_len=5):
+
+def segment_by_entropy(entropy,
+                       threshold=1.0,
+                       gradient_thres=0.15,
+                       min_len=5,
+                       smooth_window=3):
+
     """
-    根据entropy切分
-    低熵 = 结构区barcode 
-    高熵 = 随机区UMI / RNA
+    使用:
+    1. smoothed entropy
+    2. entropy gradient
+    进行区块切分
     """
+
+    entropy = smooth_entropy(entropy, smooth_window)
+
+    # entropy梯度
+    grad = np.gradient(entropy)
 
     segments = []
-    start = 0
-    state = entropy[0] < threshold  # True = 低熵
-    
-    for i in range(1, len(entropy)):
-        cur_state = entropy[i] < threshold
-        if (cur_state != state) or (entropy[i] - entropy[i-1] > jump):
 
+    start = 0
+    state = entropy[0] < threshold
+
+    for i in range(1, len(entropy)-1):
+
+        cur_state = entropy[i] < threshold
+
+        # -------------------------
+        # 条件1:
+        # 低熵/高熵状态改变
+        # -------------------------
+        state_change = (cur_state != state)
+
+        # -------------------------
+        # 条件2:
+        # entropy快速变化
+        # -------------------------
+        sharp_drop = abs(grad[i]) > gradient_thres
+
+        if state_change or sharp_drop:
+
+            # 避免过短segment
             if i - start >= min_len:
                 segments.append((start, i, state))
 
-            start = i
-            state = cur_state
+                start = i
+                state = cur_state
 
+    # last segment
     if len(entropy) - start >= min_len:
         segments.append((start, len(entropy), state))
 
@@ -175,28 +201,119 @@ def scan(config,method):
     print(f"bc1\t{bc1_loc}")
 
     # entropy
-    entropy, consensus = global_entropy_profile(seqs)
+    raw_entropy, consensus = global_entropy_profile(seqs)
 
+# -------------------------------
+# smoothed entropy
+# -------------------------------
+    smooth_ent = smooth_entropy(raw_entropy, window=5)
+    """
+    print("\n=== Entropy Profile ===")
+
+    for i, (e, b) in enumerate(zip(raw_entropy, consensus)):
+
+        print(f"{i}\t{e:.3f}\t{b}")
+    """
+    # -------------------------------
+    # split by BC anchors
+    # -------------------------------
+    regions = split_by_barcode(
+        consensus,
+        bc2_loc,
+        bc1_loc,
+        bc_len
+    )
+
+    print("\n=== Regions ===")
+
+    for name, (s, e) in regions.items():
+
+        seq = consensus[s:e]
+
+        print(f"{name}\t{s}-{e}\t{seq}")
+
+    # -------------------------------
+    # MID = linker2
+    # -------------------------------
+    mid_s, mid_e = regions["mid"]
+
+    is_linker, score = detect_linker(
+        smooth_ent,
+        mid_s,
+        mid_e
+    )
+
+    print("\n=== Linker2 ===")
+    print(f"{mid_s}-{mid_e}")
+    print(f"mean entropy = {score:.3f}")
+
+    # -------------------------------
+    # RIGHT: search UMI
+    # -------------------------------
+    right_s, right_e = regions["right"]
+
+    umi = find_umi_region(
+    raw_entropy,
+    right_s,
+    right_e,
+    umi_len=10,
+    jump_thres=0.6
+)
+
+    print("\n=== RIGHT ===")
+
+    if umi:
+
+        us, ue, score = umi
+
+        print(f"UMI\t{us}-{ue}\tentropy={score:.3f}")
+
+        linker1 = (right_s, us)
+
+        print(f"LINKER1\t{linker1[0]}-{linker1[1]}")
+        print(consensus[linker1[0]:linker1[1]])
+
+        print(f"UMI_SEQ\t{consensus[us:ue]}")
+
+        print(f"RNA\t{ue}-{right_e}")
+
+    else:
+
+        print("No UMI detected")
+
+    # -------------------------------
+    # LEFT: optional UMI
+    # -------------------------------
+    left_s, left_e = regions["left"]
+
+    left_umi = find_umi_region(
+        raw_entropy,
+        left_s,
+        left_e,
+        umi_len=10
+    )
+
+    print("\n=== LEFT ===")
+
+    if left_umi:
+
+        us, ue, score = left_umi
+
+        print(f"LEFT_UMI\t{us}-{ue}")
+
+        print(f"PRIMER\t{left_s}-{us}")
+
+    else:
+
+        print(f"PRIMER\t{left_s}-{left_e}")
     # segmentation
-    raw_segments = segment_by_entropy(entropy)
-
-    segments = []
-    for s, e, low_entropy in raw_segments:
-        refined = refine_segment(seqs, s, e)
-        for rs, re in refined:
-            segments.append((rs, re, low_entropy))
-
-    print("\n=== Segments ===")
-    for s, e, low_entropy in segments:
-        label = "STRUCTURE" if low_entropy else "RANDOM"
-        print(f"{s}-{e}\t{label}\t{consensus[s:e]}")
 
     return {
         "bc2": bc2_loc,
         "bc1": bc1_loc,
-        "entropy": entropy,
-        "consensus": consensus,
-        "segments": segments
+        "raw_entropy": raw_entropy,
+        "smoothed_entropy": smooth_ent,
+        "consensus": consensus
     }
 
 
@@ -254,3 +371,88 @@ def refine_segment(seqs, start, end, jsd_thres=0.08, min_len=6):
     right = refine_segment(seqs, k, end, jsd_thres, min_len)
 
     return left + right
+
+def split_by_barcode(consensus, bc2_loc, bc1_loc, bc_len):
+
+    left = (0, bc2_loc)
+
+    mid = (bc2_loc + bc_len, bc1_loc)
+
+    right = (bc1_loc + bc_len, len(consensus))
+
+    return {
+        "left": left,
+        "mid": mid,
+        "right": right
+    }
+
+
+# -------------------------------
+# entropy smoothing
+# -------------------------------
+def smooth_entropy(entropy, window=5):
+
+    smoothed = []
+
+    for i in range(len(entropy)):
+
+        s = max(0, i - window)
+        e = min(len(entropy), i + window + 1)
+
+        smoothed.append(np.mean(entropy[s:e]))
+
+    return np.array(smoothed)
+
+
+# -------------------------------
+# detect umi
+# -------------------------------
+def find_umi_region(entropy,
+                    start,
+                    end,
+                    umi_len=10,
+                    jump_thres=0.25):
+
+    """
+    找:
+    entropy突然升高的位置
+    """
+
+    best_pos = None
+    best_jump = -1
+
+    for i in range(start + 1, end - umi_len):
+
+        jump = entropy[i] - entropy[i - 1]
+
+        if jump > best_jump:
+
+            best_jump = jump
+            best_pos = i
+
+    if best_jump >= jump_thres:
+
+        return (
+            best_pos,
+            best_pos + umi_len,
+            best_jump
+        )
+
+    return None
+
+# -------------------------------
+# linker detection
+# -------------------------------
+def detect_linker(entropy,
+                  start,
+                  end,
+                  low_thres=1.0):
+
+    region = entropy[start:end]
+
+    mean_entropy = np.mean(region)
+
+    if mean_entropy < low_thres:
+        return True, mean_entropy
+
+    return False, mean_entropy

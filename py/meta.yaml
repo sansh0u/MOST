@@ -41,7 +41,7 @@ requirements:
     - samtools >=1.23.1
     - snapatac2 >=2.9.0
     - opencv-python
-about:
+    - hmmlearn
   home: https://github.com/sansh0u/toolkit
   summary: "My bioinformatics tool"
   license: GPL-3.0

@@ -1,6 +1,7 @@
 import subprocess
 import logging
 from yaml_load import get_config
+from preprocess.scan_bc import check_adapter
 
 logger = logging.getLogger("toolkit")
 
@@ -46,34 +47,3 @@ def qc_adapt(cfg):
             logger.error(f"Error during DBiT-seq filtering: {e}")
             raise
 
-def check_adapter(cfg):################################################
-    if method.upper() == "RNA":
-            MAX_READS = 100000
-            FASTQ = get_config(cfg, "file1")
-            seqs1 = read_fastq_head(FASTQ, MAX_READS)
-            print(f"reads loaded: {len(seqs1)}")
-            Adapter = get_config(cfg, "adapter","AAGCAGTGGTATCAACGCAGAGTGAATGGG")
-            mismatch = get_config(cfg, "adapter_mismatch", 2)
-
-            if Adapter:
-                hits = scan_adapter_positions(seqs1, Adapter, mismatch, 50)
-                ratio = hits / len(seqs1)
-
-                sub = ratio[:50]
-                pos = sub.argmax()
-                score = sub.max()
-
-                print("\n=== Adapter result ===")
-                print(f"position\t{pos}")
-                print(f"ratio\t{score:.4f}")
-
-                result = {
-                    "score": score
-                }
-            else:
-                print("\n=== Adapter skipped (no Adapter in config) ===")
-
-    else:
-            print("\n=== Adapter skipped (ATAC mode) ===")
-
-    return result

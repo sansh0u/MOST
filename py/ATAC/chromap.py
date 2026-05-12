@@ -71,7 +71,7 @@ def sort_bed(cfg):
     #subprocess.run(["bgzip", output_file + "_sorted.bed" ,"-@", get_config(config, 'Threads')], check=True)
     #subprocess.run(["tabix", "-p", "bed", output_file + "_sorted.bed.gz"], check=True)
 
-#sort -k1,1 -k2,2n -k3,3n -k4,4 --parallel=12 -S 36G KI_1018_50.bed > KI_1018_50_sorted.bed
+#sort -k1,1 -k2,2n -k3,3n -k4,4 --parallel=12 -S 36G output_file.bed" > output_file_sorted.bed
 #module load tabix
-#bgzip KI_1018_50_sorted.bed
-#tabix -p bed KI_1018_50_sorted.bed.gz
+#bgzip output_file_sorted.bed
+#tabix -p bed output_file_sorted.bed.gz

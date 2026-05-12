@@ -88,6 +88,23 @@ def load_yaml(cfg_path):
     cfg["barcode_file"] = barcode_file
     return cfg
 
+def convert_range(r):
+    # r like "23-32"
+    start, end = map(int, r.split("-"))
+
+    start0 = start - 1
+    length = end - start + 1
+
+    return start0, length    
+
+def parse_pair(s):
+    s = s.strip("()")
+    r1, r2 = s.split(",")
+
+    bc1_start, bc_len = convert_range(r1)
+    bc2_start, bc_len = convert_range(r2)
+
+    return bc1_start, bc_len, bc2_start, bc_len
 
 def config_cal(cfg, method):
     """
@@ -145,20 +162,4 @@ def config_cal(cfg, method):
     
     return cfg
 
-def convert_range(r):
-    # r like "23-32"
-    start, end = map(int, r.split("-"))
 
-    start0 = start - 1
-    length = end - start + 1
-
-    return start0, length    
-
-def parse_pair(s):
-    s = s.strip("()")
-    r1, r2 = s.split(",")
-
-    bc1_start, bc_len = convert_range(r1)
-    bc2_start, bc_len = convert_range(r2)
-
-    return bc1_start, bc_len, bc2_start, bc_len

@@ -52,18 +52,13 @@ def run(
     print(cfg)
 
     if method == "ATAC":
-        
-        
-        
         filter(cfg)
         atac_bc(cfg)
         chromap(cfg)
         sort_bed(cfg)
 
     elif method == "RNA":
-        
-        qc_adapt(cfg, result)###########################################
-        
+        qc_adapt(cfg)
         filter(cfg)
         dbit_bc(cfg)
         stpipeline(cfg)

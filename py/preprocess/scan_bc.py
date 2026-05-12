@@ -222,75 +222,6 @@ def find_high_entropy_regions(
             regions.append((start, end))
 
     return regions
-
-
-# -------------------------------
-# main
-# -------------------------------
-def scan(cfg,method):
-
-    MAX_READS = 100000
-    fastq = get_config(cfg, "file2")
-    barcode_file = get_config(cfg, "barcode_file")
-
-    seqs = read_fastq_head(fastq, MAX_READS)
-    print(f"reads loaded: {len(seqs)}")
-    read_len = len(seqs[0])
-    # barcode
-    bc_set, bc_len = load_barcodes(barcode_file)
-    bc_hits = scan_positions_hash(seqs, bc_set, bc_len)
-
-    ratio = bc_hits / len(seqs)
-    idx = np.argsort(ratio)[-2:]
-    idx.sort()
-
-    bc2_loc, bc1_loc = idx
-
-    print("\n=== Barcode ===")
-    print(f"bc2 starts at bp \t{bc2_loc+1}")
-    print(f"bc1 starts at bp \t{bc1_loc+1}")
-
-    entropy, _ = global_entropy_profile(seqs)
-    #plot_entropy(entropy,bc1_loc,bc2_loc)
-    #print("\n=== Entropy Profile ===")
-
-    #for i, (e, b) in enumerate(zip(entropy, consensus)):
-
-        #print(f"{i}\t{e:.3f}\t{b}")
-    entropy = np.array(entropy)
-
-    regions = find_high_entropy_regions(entropy,min_len=10)
-    print("\n=== UMI ===")
-    for start, end in regions:
-        print(f"UMI candidate region: bp {start+1}-{end}")
-    
-    filtered_regions = filtered(regions,bc1_loc,bc2_loc)#######################################
-    print("\n=== Filtered UMI regions ===")
-    for start, end in filtered_regions:
-        print(f"UMI may be located between bp {start+1}-{end}")
-    if method == "RNA" and len(filtered_regions) != 1:
-        raise ValueError(
-            f"Expected exactly 1 UMI region, found {len(filtered_regions)}: {filtered_regions}"
-        )
-    umi_start, umi_end = filtered_regions[0]
-    umi_len = umi_end - umi_start 
-    
-
-    # -----------------------------------------------------
-    # output
-    # -----------------------------------------------------
-
-   
-    return {
-        "bc2": bc2_loc,
-        "bc1": bc1_loc,
-        "bc_len": bc_len,
-        "read_len": read_len,
-        'umi_start': umi_start,
-        'umi_len': umi_len
-    }
-
-
 # -----------------------------------------------------
     # plot entropy profile
 # -----------------------------------------------------
@@ -334,4 +265,119 @@ def filtered(regions,bc1_loc,bc2_loc):
 
         filtered_regions.append((start, end))
     return  filtered_regions
+
+def scan_adapter_positions(seqs, query, max_mismatch, window):
+    query = query.upper()
+    k = len(query)
+
+    L = len(seqs[0])
+    hits = np.zeros(L)
+
+    for seq in seqs:
+        if len(seq) < k:
+            continue
+
+        # 只扫前 window
+        max_i = min(window, len(seq) - k + 1)
+
+        for i in range(max_i):
+            if hamming(seq[i:i+k], query) <= max_mismatch:
+                hits[i] += 1
+
+    return hits
+# -------------------------------
+# main
+# -------------------------------
+def scan(cfg,method):
+
+    MAX_READS = 100000
+    fastq = get_config(cfg, "file2")
+    barcode_file = get_config(cfg, "barcode_file")
+
+    seqs = read_fastq_head(fastq, MAX_READS)
+    print(f"reads loaded: {len(seqs)}")
+    read_len = len(seqs[0])
+    # barcode
+    bc_set, bc_len = load_barcodes(barcode_file)
+    bc_hits = scan_positions_hash(seqs, bc_set, bc_len)
+
+    ratio = bc_hits / len(seqs)
+    idx = np.argsort(ratio)[-2:]
+    idx.sort()
+
+    bc2_loc, bc1_loc = idx
+
+    print("\n=== Barcode ===")
+    print(f"bc2 starts at bp \t{bc2_loc+1}")
+    print(f"bc1 starts at bp \t{bc1_loc+1}")
+
+    entropy, _ = global_entropy_profile(seqs)
+    #plot_entropy(entropy,bc1_loc,bc2_loc)
+    #print("\n=== Entropy Profile ===")
+
+    #for i, (e, b) in enumerate(zip(entropy, consensus)):
+
+        #print(f"{i}\t{e:.3f}\t{b}")
+    entropy = np.array(entropy)
+
+    regions = find_high_entropy_regions(entropy,min_len=10)
+    print("\n=== UMI ===")
+    for start, end in regions:
+        print(f"UMI candidate region: bp {start+1}-{end}")
+    
+    filtered_regions = filtered(regions,bc1_loc,bc2_loc)#######################################atac没有umi
+    print("\n=== Filtered UMI regions ===")
+    for start, end in filtered_regions:
+        print(f"UMI may be located between bp {start+1}-{end}")
+    if method == "RNA" and len(filtered_regions) != 1:
+        raise ValueError(
+            f"Expected exactly 1 UMI region, found {len(filtered_regions)}: {filtered_regions}"
+        )
+    umi_start, umi_end = filtered_regions[0]
+    umi_len = umi_end - umi_start 
+    
+
+    # -----------------------------------------------------
+    # output
+    # -----------------------------------------------------
+
+   
+    return {
+        "bc2": bc2_loc,
+        "bc1": bc1_loc,
+        "bc_len": bc_len,
+        "read_len": read_len,
+        'umi_start': umi_start,
+        'umi_len': umi_len
+    }
+
+def check_adapter(cfg):
+    
+    MAX_READS = 100000
+    fastq = get_config(cfg, "file1")
+    seqs1 = read_fastq_head(fastq, MAX_READS)
+    print(f"reads loaded: {len(seqs1)}")
+    Adapter = get_config(cfg, "adapter","AAGCAGTGGTATCAACGCAGAGTGAATGGG")
+    mismatch = get_config(cfg, "adapter_mismatch", 2)
+
+    if Adapter:
+        hits = scan_adapter_positions(seqs1, Adapter, mismatch, 50)
+        ratio = hits / len(seqs1)
+
+        sub = ratio[:50]
+        pos = sub.argmax()
+        score = sub.max()
+
+        print("\n=== Adapter result ===")
+        print(f"position\t{pos}")
+        print(f"ratio\t{score:.4f}")
+                
+    else:
+        print("\n=== Adapter skipped (no Adapter in config) ===")
+
+    return score
+
+
+
+
     

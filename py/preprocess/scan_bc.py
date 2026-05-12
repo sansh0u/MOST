@@ -3,7 +3,7 @@ import numpy as np
 from yaml_load import get_config
 from collections import Counter
 import math
-
+import matplotlib.pyplot as plt
 
 base2int = {'A':0, 'C':1, 'G':2, 'T':3}
 
@@ -82,25 +82,11 @@ def scan_positions_hash(seqs, bc_set, bc_len):
 
     return bc_hits
 
-def split_by_barcode(consensus, bc2_loc, bc1_loc, bc_len):
-
-    left = (0, bc2_loc)
-
-    mid = (bc2_loc + bc_len, bc1_loc)
-
-    right = (bc1_loc + bc_len, len(consensus))
-
-    return {
-        "left": left,
-        "mid": mid,
-        "right": right
-    }
 
 # -------------------------------
 # entropy
 # -------------------------------
-from collections import Counter
-import math
+
 
 def calc_entropy(column):
     """
@@ -241,17 +227,17 @@ def find_high_entropy_regions(
 # -------------------------------
 # main
 # -------------------------------
-def scan(config,method):
+def scan(cfg,method):
 
     MAX_READS = 100000
-    FASTQ = get_config(config, "file2")
-    BARCODE_FILE = get_config(config, "Barcode")
+    fastq = get_config(cfg, "file2")
+    barcode_file = get_config(cfg, "barcode_file")
 
-    seqs = read_fastq_head(FASTQ, MAX_READS)
+    seqs = read_fastq_head(fastq, MAX_READS)
     print(f"reads loaded: {len(seqs)}")
-
+    read_len = len(seqs[0])
     # barcode
-    bc_set, bc_len = load_barcodes(BARCODE_FILE)
+    bc_set, bc_len = load_barcodes(barcode_file)
     bc_hits = scan_positions_hash(seqs, bc_set, bc_len)
 
     ratio = bc_hits / len(seqs)
@@ -261,37 +247,53 @@ def scan(config,method):
     bc2_loc, bc1_loc = idx
 
     print("\n=== Barcode ===")
-    print(f"bc2\t{bc2_loc}")
-    print(f"bc1\t{bc1_loc}")
+    print(f"bc2 starts at bp \t{bc2_loc+1}")
+    print(f"bc1 starts at bp \t{bc1_loc+1}")
 
-    entropy, consensus = global_entropy_profile(seqs)
+    entropy, _ = global_entropy_profile(seqs)
     #plot_entropy(entropy,bc1_loc,bc2_loc)
-    
+    #print("\n=== Entropy Profile ===")
 
+    #for i, (e, b) in enumerate(zip(entropy, consensus)):
+
+        #print(f"{i}\t{e:.3f}\t{b}")
     entropy = np.array(entropy)
 
     regions = find_high_entropy_regions(entropy,min_len=10)
-
-    print(regions)
+    print("\n=== UMI ===")
+    for start, end in regions:
+        print(f"UMI candidate region: bp {start+1}-{end}")
+    
+    filtered_regions = filtered(regions,bc1_loc,bc2_loc)#######################################
+    print("\n=== Filtered UMI regions ===")
+    for start, end in filtered_regions:
+        print(f"UMI may be located between bp {start+1}-{end}")
+    if method == "RNA" and len(filtered_regions) != 1:
+        raise ValueError(
+            f"Expected exactly 1 UMI region, found {len(filtered_regions)}: {filtered_regions}"
+        )
+    umi_start, umi_end = filtered_regions[0]
+    umi_len = umi_end - umi_start 
     
 
     # -----------------------------------------------------
     # output
     # -----------------------------------------------------
 
-    print("\n=== Entropy Profile ===")
-
-    #for i, (e, b) in enumerate(zip(entropy, consensus)):
-
-        #print(f"{i}\t{e:.3f}\t{b}")
+   
     return {
         "bc2": bc2_loc,
         "bc1": bc1_loc,
-        "bc_len": bc_len
+        "bc_len": bc_len,
+        "read_len": read_len,
+        'umi_start': umi_start,
+        'umi_len': umi_len
     }
 
 
-import matplotlib.pyplot as plt
+# -----------------------------------------------------
+    # plot entropy profile
+# -----------------------------------------------------
 
 def plot_entropy(entropy, bc1_loc , bc2_loc, title="Global Entropy Profile" ):
 
@@ -316,3 +318,20 @@ def plot_entropy(entropy, bc1_loc , bc2_loc, title="Global Entropy Profile" ):
 
     plt.show()
 
+def filtered(regions,bc1_loc,bc2_loc):
+    filtered_regions = []
+    for start, end in regions:
+
+        if end >= 117:
+            continue
+
+        overlap_bc1 = not (end <= bc1_loc or start >= bc1_loc+8)
+
+        overlap_bc2 = not (end <= bc2_loc or start >= bc2_loc+8)
+
+        if overlap_bc1 or overlap_bc2:
+            continue
+
+        filtered_regions.append((start, end))
+    return  filtered_regions
+    

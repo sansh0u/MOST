@@ -11,7 +11,7 @@ from preprocess.bc_process import dbit_bc, atac_bc
 from pathlib import Path
 import yaml
 from preprocess.visual import detect_tissue_pixels
-from preprocess.scan_bc import scan
+
 from DBiT_RNA.qc_adapt import qc_adapt
 
 
@@ -39,34 +39,34 @@ logger = logging.getLogger("toolkit")
 # =========================
 @app.command(no_args_is_help = True)
 def run(
-    config_path: str = typer.Option(..., "--config", help="Pipeline config YAML"),
+    cfg_path: str = typer.Option(..., "--config", help="Pipeline config YAML"),
 ):
     """Run main pipeline"""
 
     print("Pipeline started")
 
-    config = load_yaml(config_path)
-    os.makedirs(get_config(config, "dir"), exist_ok=True)
-    method = get_config(config, "Method")
-    
+    cfg = load_yaml(cfg_path)
+    os.makedirs(get_config(cfg, "dir"), exist_ok=True)
+    method = get_config(cfg, "Method")
+    cfg = config_cal(cfg, method)
+    print(cfg)
 
     if method == "ATAC":
-        result = scan(config, method)
-        #config = config_cal(config, result)
-        #print(config)
-        #filter(config)
-        #atac_bc(config)
-        #chromap(config)
-        #sort_bed(config)
+        
+        
+        
+        filter(cfg)
+        atac_bc(cfg)
+        chromap(cfg)
+        sort_bed(cfg)
 
     elif method == "RNA":
         
-        result = scan(config, method)
-        #qc_adapt(config, result)
-        #print(config)
-        #filter(config)
-        #dbit_bc(config)
-        #stpipeline(config)
+        qc_adapt(cfg, result)###########################################
+        
+        filter(cfg)
+        dbit_bc(cfg)
+        stpipeline(cfg)
 
 
 @app.command(no_args_is_help = True)
@@ -85,7 +85,7 @@ def zumis(
     """Run zUMIs pipeline"""
 
     BASE_DIR = Path(__file__).resolve().parent
-    CONFIG_FILE = BASE_DIR / "config" / ".config.yaml"
+    cfg_file = BASE_DIR / "config" / ".config.yaml"
     # ========= zUMIs 路径处理 =========
     if zpath:
         zpath = Path(zpath)
@@ -99,9 +99,9 @@ def zumis(
         if zpath.name != "zUMIs.sh":
             raise typer.BadParameter("Please provide zUMIs.sh or its directory")
 
-        CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(CONFIG_FILE, "w") as f:
+        cfg_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(cfg_file, "w") as f:
             yaml.safe_dump({"zumis_path": str(zpath)}, f)
         
         #  如果只是设置路径（没有任何运行参数），直接退出
@@ -110,8 +110,8 @@ def zumis(
             raise typer.Exit()
 
     else:
-        if CONFIG_FILE.exists():
-            with open(CONFIG_FILE) as f:
+        if cfg_file.exists():
+            with open(cfg_file) as f:
                 cfg = yaml.safe_load(f) or {}
 
             if "zumis_path" in cfg:

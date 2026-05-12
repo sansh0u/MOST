@@ -10,8 +10,7 @@ Reference:
   fa_file: /home/sanshou/project/toolkit/toolkit/index/human/GRCh38.primary_assembly.genome.fa
   gtf_file: /home/sanshou/project/toolkit/toolkit/index/human/gencode.v48.primary_assembly.annotation.gtf
   star_index: /home/sanshou/project/toolkit/star_index1
-
-Barcode:
+  barcode_file:
 
 Out_dir:
   dir: /home/sanshou/project/toolkit/output/
@@ -22,7 +21,10 @@ Advanced:
   primer: #CAAGCGTTGGCTTCTCGCATCT
   linker1: #GTGGCCGATGTTTCGCATCGGCGTACGACT
   linker2: #ATCCACGTGCTTGAGAGGCCAGAGCATTCG
-  UMI: #umi起始位置
+  
+  UMI: #(23-32)
+  BC: #(33-40,71-78)
+  
   hdist: #3
   rna_lib: #pcr/illumina
   adapter: #AAGCAGTGGTATCAACGCAGAGTGAATGGG

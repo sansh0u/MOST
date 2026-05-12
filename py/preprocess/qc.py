@@ -5,22 +5,22 @@ from yaml_load import get_config
 logger = logging.getLogger("toolkit")
 
 
-def filter(config):
+def filter(cfg):
     """
     根据提供的配置对ATAC-seq数据进行过滤
     """
     # Placeholder for actual filtering logic需要校对logo信息
     #logger.info("Starting ATAC-seq quality control filtering...")
-    out_dir = get_config(config, "dir")
-    in1 = get_config(config, "file1")
-    in2 = get_config(config, "file2")
-    k1 = get_config(config, "k1")
-    k2 = get_config(config, "k2")
-    threads = get_config(config, "Threads")
-    linker1 = get_config(config, "linker1")
-    linker2 = get_config(config, "linker2")
-    restrictleft1 = get_config(config, "restrictleft1")
-    restrictleft2 = get_config(config, "restrictleft2")
+    out_dir = get_config(cfg, "dir")
+    in1 = get_config(cfg, "file1")
+    in2 = get_config(cfg, "file2")
+    k1 = get_config(cfg, "k1")
+    k2 = get_config(cfg, "k2")
+    threads = get_config(cfg, "Threads")
+    linker1 = get_config(cfg, "linker1")
+    linker2 = get_config(cfg, "linker2")
+    restrictleft1 = get_config(cfg, "restrictleft1")
+    restrictleft2 = get_config(cfg, "restrictleft2")
 
     cmd1 =  [
         "bbduk",
@@ -46,7 +46,7 @@ def filter(config):
         f"hdist=3",
         f"k={k2}",
         f"literal={linker2}",
-        f"threads={config['Threads']}",
+        f"threads={threads}",
         "mm=f", "rcomp=f", f"skipr1=t",
         f"restrictleft={restrictleft2}",
         f"stats={out_dir}/bbduk_stats_L2.txt"

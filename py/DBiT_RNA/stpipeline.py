@@ -16,22 +16,22 @@ def unzip(file_path):
 
     return out
 
-def stpipeline(config):
+def stpipeline(cfg):
     """
     根据提供的配置对DBiT-seq数据进行chromap分析
     """
-    stpipeline_id = get_config(config, 'Project', 'stpipeline')
-    output_folder = f"{get_config(config, 'dir')}"
-    temp_folder = f"{get_config(config, 'dir')}/temp"
+    stpipeline_id = get_config(cfg, 'Project', 'stpipeline')
+    output_folder = f"{get_config(cfg, 'dir')}"
+    temp_folder = f"{get_config(cfg, 'dir')}/temp"
     os.makedirs(temp_folder, exist_ok=True)
-    output_file_R2 = f"{get_config(config, 'dir')}/linker2_R1.fastq.gz"
-    output_file_R1 = f"{get_config(config, 'dir')}/output_R2.fastq.gz"
-    b_file = f"{get_config(config, 'dir')}/linker2_R2.fastq.gz"
-    star_index = get_config(config, 'star_index')
-    gtf_file = get_config(config, 'gtf_file')
-    output_file = f"{get_config(config, 'dir')}/{get_config(config, 'Project')}.bed"
-    bc_file = get_config(config, 'Barcode')
-    thread = str(get_config(config, 'Threads'))
+    output_file_R2 = f"{get_config(cfg, 'dir')}/linker2_R1.fastq.gz"
+    output_file_R1 = f"{get_config(cfg, 'dir')}/output_R2.fastq.gz"
+    b_file = f"{get_config(cfg, 'dir')}/linker2_R2.fastq.gz"
+    star_index = get_config(cfg, 'star_index')
+    gtf_file = get_config(cfg, 'gtf_file')
+    output_file = f"{get_config(cfg, 'dir')}/{get_config(cfg, 'Project')}.bed"
+    bc_file = get_config(cfg, 'barcode_file')
+    thread = str(get_config(cfg, 'Threads'))
     
     out_gtf = unzip(gtf_file)
 

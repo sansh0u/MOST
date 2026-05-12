@@ -4,19 +4,19 @@ from yaml_load import get_config
 
 logger = logging.getLogger("toolkit")
 
-def chromap(config):
+def chromap(cfg):
     """
     根据提供的配置对ATAC-seq数据进行chromap分析
     """
-    output_file_R1 = f"{get_config(config, 'dir')}/output_R1.fastq.gz"
-    output_file_R2 = f"{get_config(config, 'dir')}/linker2_R1.fastq.gz"
-    subprocess.run(["rm", f"{get_config(config, 'dir')}/linker2_R2.fastq.gz"], check=True)
-    b_file = f"{get_config(config, 'dir')}/output_R2.fastq.gz"
-    index_file = get_config(config, 'index_file')
-    fa_file = get_config(config, 'fa_file')
-    output_file = f"{get_config(config, 'dir')}/{get_config(config, 'Project')}.bed"
-    bc_file = get_config(config, 'file')
-    thread = str(get_config(config, 'Threads'))
+    output_file_R1 = f"{get_config(cfg, 'dir')}/output_R1.fastq.gz"
+    output_file_R2 = f"{get_config(cfg, 'dir')}/linker2_R1.fastq.gz"
+    subprocess.run(["rm", f"{get_config(cfg, 'dir')}/linker2_R2.fastq.gz"], check=True)
+    b_file = f"{get_config(cfg, 'dir')}/output_R2.fastq.gz"
+    index_file = get_config(cfg, 'index_file')
+    fa_file = get_config(cfg, 'fa_file')
+    output_file = f"{get_config(cfg, 'dir')}/{get_config(cfg, 'Project')}.bed"
+    bc_file = get_config(cfg, 'barcode_file')
+    thread = str(get_config(cfg, 'Threads'))
     cmd = [ "chromap", 
         "--preset", "atac", "-x", index_file, 
         "-r", fa_file, 
@@ -36,14 +36,14 @@ def chromap(config):
     subprocess.run(["rm", "-r",output_file_R1, output_file_R2, b_file], check=True)
 
 
-def sort_bed(config):
+def sort_bed(cfg):
     """
     对chromap输出的bed文件进行排序
     """
     
     #subprocess.run(["sort", "-k1,1", "-k2,2n", "-k3,3n", "-k4,4", f"--parallel={get_config(config, 'Threads')}", "-S 36G", output_file +".bed", ">", output_file + "_sorted.bed"], check=True)
-    threads = str(get_config(config, "Threads"))
-    output_file = f"{get_config(config, 'dir')}/{get_config(config, 'Project')}"
+    threads = str(get_config(cfg, "Threads"))
+    output_file = f"{get_config(cfg, 'dir')}/{get_config(cfg, 'Project')}"
     with open(output_file + "_sorted.bed", "w") as f:
         subprocess.run([
             "sort",

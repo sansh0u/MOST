@@ -270,7 +270,7 @@ def scan(config,method):
 
     entropy = np.array(entropy)
 
-    regions = find_high_entropy_regions(entropy,min_len=7)
+    regions = find_high_entropy_regions(entropy,min_len=10)
 
     print(regions)
     

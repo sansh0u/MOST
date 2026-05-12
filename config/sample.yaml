@@ -3,8 +3,8 @@ Project: #test
 Method: ATAC #ATAC/RNA
 
 Sequence_file:
-  file1: /mnt/d/prog/SRR32966850_1.fastq.gz
-  file2: /mnt/d/prog/SRR32966850_2.fastq.gz
+  file1: /mnt/d/prog/HYS_sample3_L1_1.fq.gz
+  file2: /mnt/d/prog/HYS_sample3_L1_2.fq.gz
 Reference:
   index_file: /home/sanshou/project/toolkit/toolkit/index/GRCm38.primary_assembly.genome.index
   fa_file: /home/sanshou/project/toolkit/toolkit/index/human/GRCh38.primary_assembly.genome.fa

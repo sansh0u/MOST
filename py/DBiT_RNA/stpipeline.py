@@ -29,7 +29,6 @@ def stpipeline(cfg):
     b_file = f"{get_config(cfg, 'dir')}/linker2_R2.fastq.gz"
     star_index = get_config(cfg, 'star_index')
     gtf_file = get_config(cfg, 'gtf_file')
-    output_file = f"{get_config(cfg, 'dir')}/{get_config(cfg, 'Project')}.bed"
     bc_file = get_config(cfg, 'barcode_file')
     thread = str(get_config(cfg, 'Threads'))
     
@@ -61,4 +60,4 @@ def stpipeline(cfg):
     except subprocess.CalledProcessError as e:
         #logger.error(f"Error during chromap analysis: {e}")
         raise
-    #subprocess.run(["rm", "-r",output_file_R1, output_file_R2, b_file, out_gtf], check=True)
+    subprocess.run(["rm", "-r",output_file_R1, output_file_R2, b_file, out_gtf], check=True)

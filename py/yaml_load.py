@@ -110,8 +110,13 @@ def config_cal(cfg, method):
     """
     计算配置文件中的参数,如果advance里没有则默认
     """ 
+    valid_methods = {"ATAC", "RNA"}
+    if method not in valid_methods:
+        raise ValueError(f"Unknown method: {method}")
+
     umi = get_config(cfg, "UMI")
     bc = get_config(cfg, "BC")
+
     if bc and umi is not None:
         umi_start, umi_len = convert_range(cfg["UMI"])
         bc1_start, bc_len, bc2_start, bc_len = parse_pair(cfg["BC"])
@@ -125,7 +130,6 @@ def config_cal(cfg, method):
         umi_start = result["umi_start"]
         umi_len = result["umi_len"]
     
-
     bc2_end = bc2_start + bc_len
     bc1_end = bc1_start + bc_len
     primer = get_config(cfg, "primer", "CAAGCGTTGGCTTCTCGCATCT")
@@ -133,12 +137,10 @@ def config_cal(cfg, method):
     linker2 = get_config(cfg, "linker2", "ATCCACGTGCTTGAGAGGCCAGAGCATTCG")
 
     if read_len == 100:
-        linker1 = ""
+        linker2 = ""
     
     k1 = len(linker1)
     k2 = len(linker2)
-
-    
 
     restrictleft1 = bc1_end + k1 + umi_len
     restrictleft2 = bc2_end + k2 + umi_len

@@ -320,20 +320,36 @@ def scan(cfg,method):
         #print(f"{i}\t{e:.3f}\t{b}")
     entropy = np.array(entropy)
 
-    regions = find_high_entropy_regions(entropy,min_len=10)
     print("\n=== UMI ===")
+    regions = find_high_entropy_regions(entropy,min_len=6)
+    
     for start, end in regions:
         print(f"UMI candidate region: bp {start+1}-{end}")
-    
-    filtered_regions = filtered(regions,bc1_loc,bc2_loc)#######################################atac没有umi
+        
     print("\n=== Filtered UMI regions ===")
-    for start, end in filtered_regions:
-        print(f"UMI may be located between bp {start+1}-{end}")
-    if method == "RNA" and len(filtered_regions) != 1:
-        raise ValueError(
-            f"Expected exactly 1 UMI region, found {len(filtered_regions)}: {filtered_regions}"
-        )
-    umi_start, umi_end = filtered_regions[0]
+    filtered_regions = filtered(regions,bc1_loc,bc2_loc)
+    umi_start = umi_end = umi_len = 0
+    
+    if method == "ATAC":
+        if not filtered_regions:
+            print("No UMI region found.")
+            
+        else:
+            
+            for start, end in filtered_regions:
+                print(f"UMI may be located between bp {start+1}-{end}")
+            umi_start, umi_end = filtered_regions[0]
+            
+    elif method == "RNA":
+        if len(filtered_regions) != 1:
+            raise ValueError(
+                f"Expected exactly 1 UMI region, found {len(filtered_regions)}: {filtered_regions}"
+            )
+        
+        for start, end in filtered_regions:
+            print(f"UMI may be located between bp {start+1}-{end}")
+        umi_start, umi_end = filtered_regions[0]
+   
     umi_len = umi_end - umi_start 
     
 

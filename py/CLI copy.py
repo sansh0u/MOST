@@ -1,5 +1,4 @@
 
-from numpy._core.defchararray import zfill
 import typer
 import os
 import logging
@@ -68,14 +67,14 @@ def run(
 @app.command(no_args_is_help=True)
 def zumis(
     zpath: str = typer.Option(None, "--l", help="Path to zUMIs.sh"),
-    cfg_path: str = typer.Option(..., "--config", help="YAML config file")
+    config: str = typer.Option(..., "--config", help="YAML config file")
+
 ):
     """Run zUMIs pipeline"""
 
     BASE_DIR = Path(__file__).resolve().parent
     cfg_file = BASE_DIR / "config" / ".config.yaml"
-    zcfg_path = BASE_DIR / "config"  / "zUMIs.yaml"
-    
+
     # ========= zUMIs 路径处理 =========
     if zpath:
         zpath = Path(zpath)
@@ -101,10 +100,10 @@ def zumis(
     else:
         if cfg_file.exists():
             with open(cfg_file) as f:
-                zcfg = yaml.safe_load(f) or {}
+                cfg = yaml.safe_load(f) or {}
 
-            if "zumis_path" in zcfg:
-                zpath = Path(zcfg["zumis_path"])
+            if "zumis_path" in cfg:
+                zpath = Path(cfg["zumis_path"])
             else:
                 raise typer.BadParameter(
                     "No zUMIs path found, please provide --l once"
@@ -120,22 +119,15 @@ def zumis(
     print(f"Using zUMIs: {zpath}")
 
     # ========= config 检查 =========
-    cfg_path = Path(cfg_path)
+    config = Path(config)
 
-    if not cfg_path.exists():
-        raise typer.BadParameter(f"Config file not found: {cfg_path}")
+    if not config.exists():
+        raise typer.BadParameter(f"Config file not found: {config}")
 
-    print(f"Using config: {cfg_path}")
+    print(f"Using config: {config}")
 
     # ========= 运行 =========
-    cfg = load_yaml(cfg_path)
-    os.makedirs(get_config(cfg, "dir"), exist_ok=True)
-    method = get_config(cfg, "Method")
-    cfg = config_cal(cfg, method)
-    print(cfg)
-    qc_adapt(cfg)
-    #这里是替换zumis yaml文件的模块
-    zUMIs(zpath, zcfg_path)
+    zUMIs(zpath, config)
 
 @app.command(no_args_is_help = True)
 def astro(
@@ -167,3 +159,91 @@ def visual(
 if __name__ == "__main__":
     app()
 
+@app.command(no_args_is_help = True)
+def zumis(
+    zpath: str = typer.Option(None, "--l", help="Path to zUMIs.sh"),
+    dbit: bool = typer.Option(False, "--dbit", help="DBiT mode"),
+    patho: bool = typer.Option(False, "--patho", help="Patho mode"),
+    rna: bool = typer.Option(False, "--rna", help="RNA mode"),
+    in1: str = typer.Option(None, "--in1"),
+    in2: str = typer.Option(None, "--in2"),
+    out: str = typer.Option(None, "--out"),
+    config: str = typer.Option(None, "--config", help="Custom YAML"),
+    illumina: bool = typer.Option(False, "--illumina"),
+    pcr: bool = typer.Option(False, "--pcr"),   
+):
+    """Run zUMIs pipeline"""
+
+    BASE_DIR = Path(__file__).resolve().parent
+    cfg_file = BASE_DIR / "config" / ".config.yaml"
+    # ========= zUMIs 路径处理 =========
+    if zpath:
+        zpath = Path(zpath)
+
+        if zpath.is_dir():
+            zpath = zpath / "zUMIs.sh"
+
+        if not zpath.exists():
+            raise typer.BadParameter(f"zUMIs not found: {zpath}")
+
+        if zpath.name != "zUMIs.sh":
+            raise typer.BadParameter("Please provide zUMIs.sh or its directory")
+
+        cfg_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        with open(cfg_file, "w") as f:
+            yaml.safe_dump({"zumis_path": str(zpath)}, f)
+        
+        #  如果只是设置路径（没有任何运行参数），直接退出
+        if not any([dbit, patho, rna, in1, in2, out, config]):
+            print("zUMIs path saved. Ready to use.")
+            raise typer.Exit()
+
+    else:
+        if cfg_file.exists():
+            with open(cfg_file) as f:
+                cfg = yaml.safe_load(f) or {}
+
+            if "zumis_path" in cfg:
+                zpath = Path(cfg["zumis_path"])
+            else:
+                raise typer.BadParameter("No zUMIs path found, please provide --l once")
+        else:
+            raise typer.BadParameter("Please provide --l (zUMIs path) at least once")
+
+    if not zpath.exists():
+        raise typer.BadParameter(f"zUMIs not found: {zpath}")
+
+    print(f"Using zUMIs: {zpath}")
+
+    # ========= mode 检查 =========
+    if config:
+        if any([dbit, patho, rna]):
+            raise typer.BadParameter("--config cannot be used with --dbit/--patho/--rna")
+
+    mode_count = sum([dbit, patho, rna])
+
+    if mode_count == 0:
+        raise typer.BadParameter("Select one mode: --dbit / --patho / --rna")
+
+    if mode_count > 1:
+        raise typer.BadParameter("Only one mode allowed")
+
+    if not all([in1, in2, out]):
+        raise typer.BadParameter("Require --in1 --in2 --out")
+
+    # ========= 模式 =========
+    if dbit:
+        zUMIsconfig = BASE_DIR / "config" / "DBit.yaml"
+        mode = "DBiT"
+    elif patho:
+        zUMIsconfig = BASE_DIR / "config" / "Patho.yaml"
+        mode = "Patho"
+    else:
+        zUMIsconfig = BASE_DIR / "config" / "RNA.yaml"
+        mode = "RNA"
+
+    print(f"Running zUMIs in {mode} mode")
+
+
+    zUMIs(zpath, zUMIsconfig, in1, in2, out)

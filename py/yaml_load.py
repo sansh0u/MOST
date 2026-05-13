@@ -83,7 +83,7 @@ def load_yaml(cfg_path):
         #logger.error("YAML file is empty.")
         return None
     #直接输出config，要什么调用的时候自己取
-    default_barcode = ( Path(__file__).resolve().parent.parent / "barcode" / "20240614_2500barcode_AB_update.txt")
+    default_barcode = ( Path(__file__).resolve().parent / "barcode" / "20240614_2500barcode_AB_update.txt")
     barcode_file = get_config(cfg, "barcode_file",default_barcode)
     cfg["barcode_file"] = barcode_file
     return cfg

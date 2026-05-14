@@ -14,46 +14,45 @@ project:
 #you can specify between 1 and 4 input files
 sequence_files:
   file1:
-    name: #path to first file
+    name: 
     base_definition:
-      - #example: BC(1-6)
-      - #example: UMI(7-16)
+      - 
   file2:
-    name:  #path to second file
+    name: 
     base_definition:
-      - #example: cDNA(1-50)
-
+      - 
+      - 
 
 #reference genome setup
 reference:
-  STAR_index: #path to STAR genome index
-  GTF_file: #path to gene annotation file in GTF format
+  STAR_index: 
+  GTF_file: 
   exon_extension: no #extend exons by a certain width?
   extension_length: 0 #number of bp to extend exons by
   scaffold_length_min: 0 #minimal scaffold/chromosome length to consider (0 = all)
   additional_files: #Optional parameter. It is possible to give additional reference sequences here, eg ERCC.fa
-  additional_STAR_params: #Optional parameter. you may add custom mapping parameters to STAR here
+  additional_STAR_params: 
 
 #output directory
-out_dir: #specify the full path to the output directory
+out_dir: 
 
 ###########################################
 #below, you may optionally change default parameters
 ###########################################
 
 #number of processors to use
-num_threads: 6
-mem_limit: null #Memory limit in Gigabytes, null meaning unlimited RAM usage.
+num_threads: 16
+mem_limit: 138 #Memory limit in Gigabytes, null meaning unlimited RAM usage.
 
 #barcode & UMI filtering options
 #number of bases under the base quality cutoff that should be filtered out.
 #Phred score base-cutoff for quality control.
 filter_cutoffs:
   BC_filter:
-    num_bases: 1
+    num_bases: 3
     phred: 20
   UMI_filter:
-    num_bases: 1
+    num_bases: 3
     phred: 20
 
 #Options for Barcode handling
@@ -61,9 +60,9 @@ filter_cutoffs:
 #If you leave both barcode_num and barcode_file empty, zUMIs will perform automatic cell barcode selection for you!
 barcodes:
   barcode_num: null
-  barcode_file: null
+  barcode_file: 
   barcode_sharing: null #Optional for combining several barcode sequences per cell (see github wiki)
-  automatic: yes #Give yes/no to this option. If the cell barcodes should be detected automatically. If the barcode file is given in combination with automatic barcode detection, the list of given barcodes will be used as whitelist.
+  automatic: no #Give yes/no to this option. If the cell barcodes should be detected automatically. If the barcode file is given in combination with automatic barcode detection, the list of given barcodes will be used as whitelist.
   BarcodeBinning: 1 #Hamming distance binning of close cell barcode sequences.
   nReadsperCell: 100 #Keep only the cell barcodes with atleast n number of reads.
   demultiplex: no #produce per-cell demultiplexed bam files.
@@ -74,7 +73,7 @@ counting_opts:
   intronProb: no #perform an estimation of how likely intronic reads are to be derived from mRNA by comparing to intergenic counts.
   downsampling: 0 #Number of reads to downsample to. This value can be a fixed number of reads (e.g. 10000) or a desired range (e.g. 10000-20000) Barcodes with less than <d> will not be reported. 0 means adaptive downsampling. Default: 0.
   strand: 0 #Is the library stranded? 0 = unstranded, 1 = positively stranded, 2 = negatively stranded
-  Ham_Dist: 0 #Hamming distance collapsing of UMI sequences.
+  Ham_Dist: 1 #Hamming distance collapsing of UMI sequences.
   velocyto: no #Would you like velocyto to do counting of intron-exon spanning reads
   primaryHit: yes #Do you want to count the primary Hits of multimapping reads towards gene expression levels?
   multi_overlap: no #Do you want to assign reads overlapping to multiple features?

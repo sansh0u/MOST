@@ -3,8 +3,9 @@ from numpy._core.defchararray import zfill
 import typer
 import os
 import logging
-from yaml_load import load_yaml, get_config, config_cal,setup_logger
-from DBiT_RNA.run_zUMIs import zUMIs
+from yaml_load import load_yaml,  config_cal,setup_logger
+from config_utils import get_config
+from DBiT_RNA.run_zUMIs import zUMIs, filled_yaml
 from preprocess.qc import filter
 from ATAC.chromap import chromap, sort_bed
 from DBiT_RNA.stpipeline import stpipeline
@@ -12,9 +13,8 @@ from preprocess.bc_process import dbit_bc, atac_bc
 from pathlib import Path
 import yaml
 from preprocess.visual import detect_tissue_pixels
-
 from DBiT_RNA.qc_adapt import qc_adapt
-
+from preprocess.scan_bc import check_adapter
 
 app = typer.Typer(help = """
  pipeline toolkit
@@ -47,11 +47,12 @@ def run(
     print("Pipeline started")
 
     cfg = load_yaml(cfg_path)
-    os.makedirs(get_config(cfg, "dir"), exist_ok=True)
+    os.makedirs(get_config(cfg, "Out_dir"), exist_ok=True)
     method = get_config(cfg, "Method")
     cfg = config_cal(cfg, method)
-    print(cfg)
-
+    #print(cfg)
+    check_adapter(cfg)
+    """
     if method == "ATAC":
         filter(cfg)
         atac_bc(cfg)
@@ -63,7 +64,7 @@ def run(
         filter(cfg)
         dbit_bc(cfg)
         stpipeline(cfg)
-
+"""
 
 @app.command(no_args_is_help=True)
 def zumis(
@@ -74,7 +75,7 @@ def zumis(
 
     BASE_DIR = Path(__file__).resolve().parent
     cfg_file = BASE_DIR / "config" / ".config.yaml"
-    zcfg_path = BASE_DIR / "config"  / "zUMIs.yaml"
+    zcfg_path = BASE_DIR / "config"  / "RNA.yaml"
     
     # ========= zUMIs 路径处理 =========
     if zpath:
@@ -129,13 +130,14 @@ def zumis(
 
     # ========= 运行 =========
     cfg = load_yaml(cfg_path)
-    os.makedirs(get_config(cfg, "dir"), exist_ok=True)
+    os.makedirs(get_config(cfg, "Out_dir"), exist_ok=True)
     method = get_config(cfg, "Method")
     cfg = config_cal(cfg, method)
     print(cfg)
-    qc_adapt(cfg)
-    #这里是替换zumis yaml文件的模块
-    zUMIs(zpath, zcfg_path)
+    #qc_adapt(cfg)
+    check_adapter(cfg)
+    filled_yaml(cfg, zcfg_path)
+    #zUMIs(zpath)
 
 @app.command(no_args_is_help = True)
 def astro(

@@ -1,6 +1,6 @@
 import logging
 import subprocess
-from yaml_load import get_config
+from config_utils import get_config
 import os
 
 logger = logging.getLogger("toolkit")
@@ -21,12 +21,12 @@ def stpipeline(cfg):
     根据提供的配置对DBiT-seq数据进行chromap分析
     """
     stpipeline_id = get_config(cfg, 'Project', 'stpipeline')
-    output_folder = f"{get_config(cfg, 'dir')}"
-    temp_folder = f"{get_config(cfg, 'dir')}/temp"
+    output_folder = f"{get_config(cfg, 'Out_dir')}"
+    temp_folder = f"{get_config(cfg, 'Out_dir')}/temp"
     os.makedirs(temp_folder, exist_ok=True)
-    output_file_R2 = f"{get_config(cfg, 'dir')}/linker2_R1.fastq.gz"
-    output_file_R1 = f"{get_config(cfg, 'dir')}/output_R2.fastq.gz"
-    b_file = f"{get_config(cfg, 'dir')}/linker2_R2.fastq.gz"
+    output_file_R2 = f"{get_config(cfg, 'Out_dir')}/linker2_R1.fastq.gz"
+    output_file_R1 = f"{get_config(cfg, 'Out_dir')}/output_R2.fastq.gz"
+    b_file = f"{get_config(cfg, 'Out_dir')}/linker2_R2.fastq.gz"
     star_index = get_config(cfg, 'star_index')
     gtf_file = get_config(cfg, 'gtf_file')
     bc_file = get_config(cfg, 'barcode_file')

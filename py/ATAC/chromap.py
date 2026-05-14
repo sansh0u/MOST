@@ -1,6 +1,6 @@
 import logging
 import subprocess
-from yaml_load import get_config
+from config_utils import get_config
 
 logger = logging.getLogger("toolkit")
 
@@ -11,7 +11,7 @@ def chromap(cfg):
     output_file_R1 = f"{get_config(cfg, 'dir')}/output_R1.fastq.gz"
     output_file_R2 = f"{get_config(cfg, 'dir')}/linker2_R1.fastq.gz"
     subprocess.run(["rm", f"{get_config(cfg, 'dir')}/linker2_R2.fastq.gz"], check=True)
-    b_file = f"{get_config(cfg, 'dir')}/output_R2.fastq.gz"
+    b_file = f"{get_config(cfg, 'Out_dir')}/output_R2.fastq.gz"
     index_file = get_config(cfg, 'index_file')
     fa_file = get_config(cfg, 'fa_file')
     output_file = f"{get_config(cfg, 'dir')}/{get_config(cfg, 'Project')}.bed"

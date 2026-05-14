@@ -2,7 +2,8 @@
 import typer
 import os
 import logging
-from yaml_load import load_yaml, get_config, config_cal,setup_logger
+from yaml_load import load_yaml, config_cal,setup_logger
+from config_utils import get_config
 from DBiT_RNA.run_zUMIs import zUMIs
 from preprocess.qc import filter
 from ATAC.chromap import chromap, sort_bed

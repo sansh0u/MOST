@@ -14,9 +14,9 @@ def atac_bc(cfg):
     '''
     
     
-    input_file = get_config(cfg, "dir") + "/linker2_R2.fastq.gz"
-    output_file_R1 = get_config(cfg, "dir") + "/output_R1.fastq"
-    output_file_R2 = get_config(cfg, "dir") + "/output_R2.fastq"
+    input_file = get_config(cfg, "Out_dir") + "/linker2_R2.fastq.gz"
+    output_file_R1 = get_config(cfg, "Out_dir") + "/output_R1.fastq"
+    output_file_R2 = get_config(cfg, "Out_dir") + "/output_R2.fastq"
 
     
     seq_start = get_config(cfg, "seq_start")
@@ -53,8 +53,8 @@ def dbit_bc(cfg):
     BC2,BC1,UMI
     """
 
-    input_file = get_config(cfg, "dir") + "/linker2_R2.fastq.gz"
-    output_file = get_config(cfg, "dir") + "/output_R2.fastq"
+    input_file = get_config(cfg, "Out_dir") + "/linker2_R2.fastq.gz"
+    output_file = get_config(cfg, "Out_dir") + "/output_R2.fastq"
     
     umi_start = get_config(cfg, "umi_start")
     umi_len = get_config(cfg, "umi_len")

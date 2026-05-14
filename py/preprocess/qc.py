@@ -11,7 +11,7 @@ def filter(cfg):
     """
     # Placeholder for actual filtering logic需要校对logo信息
     #logger.info("Starting ATAC-seq quality control filtering...")
-    out_dir = get_config(cfg, "dir")
+    out_dir = get_config(cfg, "Out_dir")
     in1 = get_config(cfg, "file1")
     in2 = get_config(cfg, "file2")
     k1 = get_config(cfg, "k1")

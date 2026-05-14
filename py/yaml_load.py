@@ -8,6 +8,7 @@ import yaml
 import logging
 import os
 from pathlib import Path
+from config_utils import get_config
 from preprocess.scan_bc import scan
 
 logger = logging.getLogger("toolkit")
@@ -85,7 +86,8 @@ def load_yaml(cfg_path):
     #直接输出config，要什么调用的时候自己取
     default_barcode = ( Path(__file__).resolve().parent / "barcode" / "20240614_2500barcode_AB_update.txt")
     barcode_file = get_config(cfg, "barcode_file",default_barcode)
-    cfg["barcode_file"] = barcode_file
+    cfg["Reference"]["barcode_file"] = str(barcode_file)
+    cfg["Project"] = get_config(cfg, "Project", "project")
     return cfg
 
 def convert_range(r):

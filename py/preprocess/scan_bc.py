@@ -266,6 +266,18 @@ def filtered(regions,bc1_loc,bc2_loc):
         filtered_regions.append((start, end))
     return  filtered_regions
 
+def hamming(s1, s2):
+
+    if len(s1) != len(s2):
+        raise ValueError(
+            "Sequences must have same length"
+        )
+
+    return sum(
+        c1 != c2
+        for c1, c2 in zip(s1, s2)
+    )
+
 def scan_adapter_positions(seqs, query, max_mismatch, window):
     query = query.upper()
     k = len(query)
@@ -308,8 +320,8 @@ def scan(cfg,method):
     bc2_loc, bc1_loc = idx
 
     print("\n=== Barcode ===")
-    print(f"bc2 starts at bp \t{bc2_loc+1}")
-    print(f"bc1 starts at bp \t{bc1_loc+1}")
+    print(f"bc2 starts at bp {bc2_loc+1}")
+    print(f"bc1 starts at bp {bc1_loc+1}")
 
     entropy, _ = global_entropy_profile(seqs)
     #plot_entropy(entropy,bc1_loc,bc2_loc)
@@ -372,7 +384,6 @@ def check_adapter(cfg):
     MAX_READS = 100000
     fastq = get_config(cfg, "file1")
     seqs1 = read_fastq_head(fastq, MAX_READS)
-    print(f"reads loaded: {len(seqs1)}")
     Adapter = get_config(cfg, "adapter","AAGCAGTGGTATCAACGCAGAGTGAATGGG")
     mismatch = get_config(cfg, "adapter_mismatch", 2)
 

@@ -1,6 +1,6 @@
 import subprocess
 import logging
-from yaml_load import get_config
+from config_utils import get_config
 from preprocess.scan_bc import check_adapter
 
 logger = logging.getLogger("toolkit")
@@ -39,7 +39,7 @@ def qc_adapt(cfg):
     try: ####
         if score >= 0.5:
             subprocess.run(cmd1, check=True)
-            print("Trimming adapter")
+            print("Trimming Adapter")
         else:
             subprocess.run(cmd2, check=True)
             print("Trimming ployA")

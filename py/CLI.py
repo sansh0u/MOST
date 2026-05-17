@@ -51,7 +51,7 @@ def run(
     method = get_config(cfg, "Method")
     cfg = config_cal(cfg, method)
     #print(cfg)
-    check_adapter(cfg)
+    
     """
     if method == "ATAC":
         filter(cfg)
@@ -72,7 +72,8 @@ def zumis(
     cfg_path: str = typer.Option(..., "--config", help="YAML config file")
 ):
     """Run zUMIs pipeline"""
-
+    print("zUMIs Pipeline started")
+    
     BASE_DIR = Path(__file__).resolve().parent
     cfg_file = BASE_DIR / "config" / ".config.yaml"
     zcfg_path = BASE_DIR / "config"  / "RNA.yaml"
@@ -141,10 +142,25 @@ def zumis(
 
 @app.command(no_args_is_help = True)
 def astro(
-    apath: str = typer.Option(None, "--l", help="Path to astro"),
-    config: str = typer.Option(None, "--config", help="Custom YAML")
+    cfg_path: str = typer.Option(None, "--config", help="Custom YAML")
 ):
-    """Run astro pipeline"""
+    """Run astro pipeline
+    ASTRO --R1 R1.fq --R2 R2.fq \
+--barcode_file spatial_barcodes.txt \
+--gtffile hsa.no_piRNA.gtf --starref StarIndex/ \
+--PrimerStructure AAGCAGTGGTATCAACGCAGAGTGAATGGG_b_A{10}N{150} \
+--StructureUMI CAAGCGTTGGCTTCTCGCATCT_10 \
+--StructureBarcode 20_ATCCACGTGCTTGAGAGGCCAGAGCATTCG:ATCCACGTGCTTGAGAGGCCAGAGCATTCG...GTGGCCGATGTTTCGCATCGGCGTACGACT \
+--threadnum 16 \
+--steps 7 \
+--outputfolder output/"""
+    print("Astro Pipeline started")
+
+    cfg = load_yaml(cfg_path)
+    os.makedirs(get_config(cfg, "Out_dir"), exist_ok=True)
+    method = get_config(cfg, "Method")
+    cfg = config_cal(cfg, method)
+    
 
 @app.command(no_args_is_help = True)
 def matlab(

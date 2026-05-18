@@ -7,10 +7,10 @@ logger = logging.getLogger("toolkit")
 
 def qc_adapt(cfg):
     Adapter = get_config(cfg, "adapter","AAGCAGTGGTATCAACGCAGAGTGAATGGG")
-    CleanFq1 = get_config(cfg, "file1")
-    CleanFq2 = get_config(cfg, "file2")
-    fastq_intput_1 = get_config(cfg, "dir")+ "/output_R1.fastq"
-    fastq_intput_2 = get_config(cfg, "dir")+ "/output_R2.fastq"
+    CleanFq1 = get_config(cfg, "Out_dir")+ "/filtered_R1.fastq"
+    CleanFq2 = get_config(cfg, "Out_dir")+ "/filtered_R2.fastq"
+    fastq_intput_1 = get_config(cfg, "file1")
+    fastq_intput_2 = get_config(cfg, "file2")
     score = check_adapter(cfg)
     """
     QC and adapt the primer to the fastq files.

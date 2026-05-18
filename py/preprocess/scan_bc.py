@@ -404,7 +404,11 @@ def check_adapter(cfg):
 
     return score
 
-
-
+def scan_len(cfg):
+    fastq = get_config(cfg, "file2")
+    seqs = read_fastq_head(fastq, 1)
+    print(f"reads loaded: {len(seqs)}")
+    read_len = len(seqs[0])
+    return read_len
 
     

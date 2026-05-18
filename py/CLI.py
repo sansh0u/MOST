@@ -51,20 +51,19 @@ def run(
     method = get_config(cfg, "Method")
     cfg = config_cal(cfg, method)
     #print(cfg)
-    
-    """
+
     if method == "ATAC":
-        filter(cfg)
+        filter(cfg,method)
         atac_bc(cfg)
         chromap(cfg)
         sort_bed(cfg)
 
     elif method == "RNA":
         qc_adapt(cfg)
-        filter(cfg)
+        filter(cfg,method)
         dbit_bc(cfg)
         stpipeline(cfg)
-"""
+
 
 @app.command(no_args_is_help=True)
 def zumis(

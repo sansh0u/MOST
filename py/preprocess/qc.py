@@ -5,15 +5,20 @@ from yaml_load import get_config
 logger = logging.getLogger("toolkit")
 
 
-def filter(cfg):
+def filter(cfg,method):
     """
     根据提供的配置对ATAC-seq数据进行过滤
     """
     # Placeholder for actual filtering logic需要校对logo信息
     #logger.info("Starting ATAC-seq quality control filtering...")
+    if method == 'RNA':
+        in1 = get_config(cfg, "Out_dir")+ "/filtered_R1.fastq"
+        in2 = get_config(cfg, "Out_dir")+ "/filtered_R2.fastq"
+    else:
+        in1 = get_config(cfg, "file1")
+        in2 = get_config(cfg, "file2")
     out_dir = get_config(cfg, "Out_dir")
-    in1 = get_config(cfg, "file1")
-    in2 = get_config(cfg, "file2")
+   
     k1 = get_config(cfg, "k1")
     k2 = get_config(cfg, "k2")
     threads = get_config(cfg, "Threads")
@@ -21,7 +26,7 @@ def filter(cfg):
     linker2 = get_config(cfg, "linker2")
     restrictleft1 = get_config(cfg, "restrictleft1")
     restrictleft2 = get_config(cfg, "restrictleft2")
-
+    
     cmd1 =  [
         "bbduk",
         f"in={in1}", 

@@ -9,7 +9,7 @@ import logging
 import os
 from pathlib import Path
 from config_utils import get_config
-from preprocess.scan_bc import scan
+from preprocess.scan_bc import scan,scan_len
 
 logger = logging.getLogger("toolkit")
 
@@ -92,6 +92,7 @@ def load_yaml(cfg_path):
 
 def convert_range(r):
     # r like "23-32"
+    r = r.strip("()")
     start, end = map(int, r.split("-"))
 
     start0 = start - 1
@@ -103,10 +104,10 @@ def parse_pair(s):
     s = s.strip("()")
     r1, r2 = s.split(",")
 
-    bc1_start, bc_len = convert_range(r1)
-    bc2_start, bc_len = convert_range(r2)
+    bc2_start, bc_len = convert_range(r1)
+    bc1_start, bc_len = convert_range(r2)
 
-    return bc1_start, bc_len, bc2_start, bc_len
+    return bc2_start, bc1_start, bc_len
 
 def config_cal(cfg, method):
     """
@@ -120,8 +121,9 @@ def config_cal(cfg, method):
     bc = get_config(cfg, "BC")
 
     if bc and umi is not None:
-        umi_start, umi_len = convert_range(cfg["UMI"])
-        bc1_start, bc_len, bc2_start, bc_len = parse_pair(cfg["BC"])
+        umi_start, umi_len = convert_range(umi)
+        bc2_start, bc1_start,bc_len  = parse_pair(bc)
+        read_len = scan_len(cfg)
     else:
         print("No UMI or BC found in config file. Enter automatic mode.")
         result = scan(cfg, method)

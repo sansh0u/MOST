@@ -8,7 +8,7 @@ from config_utils import get_config
 logger = logging.getLogger("toolkit")
 from pathlib import Path
 
-def zUMIs(zpath, final_yaml):
+def zUMIs(zpath, zcfg_path):
     '''
     调用zUMIs,要把in1,in2,out写进去
     '''
@@ -17,7 +17,7 @@ def zUMIs(zpath, final_yaml):
         zpath,
         "-c", 
         "-y",
-        final_yaml
+        zcfg_path
     ]
     try: ####
         subprocess.run(cmd, check=True)

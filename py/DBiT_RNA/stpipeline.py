@@ -6,13 +6,15 @@ import os
 logger = logging.getLogger("toolkit")
 
 
-def unzip(file_path):
+def unzip(file_path,thread):
     if not file_path.endswith(".gz"):
         return file_path
-
+    
     out = file_path[:-3]
-
-    subprocess.run(["pigz", "-dc", file_path], stdout=open(out, "wb"), check=True)
+    with open(out, "wb") as f:
+        subprocess.run(
+            ["pigz","-p",thread,"-dc", file_path], stdout=f, check=True
+        )
 
     return out
 
@@ -32,7 +34,7 @@ def stpipeline(cfg):
     bc_file = get_config(cfg, 'barcode_file')
     thread = str(get_config(cfg, 'Threads'))
     
-    out_gtf = unzip(gtf_file)
+    out_gtf = unzip(gtf_file,thread)
 
     cmd = [ "st_pipeline_run", 
         "--output-folder", output_folder,

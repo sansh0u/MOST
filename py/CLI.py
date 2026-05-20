@@ -68,21 +68,10 @@ def run(
 @app.command(no_args_is_help=True)
 def zumis(
     zpath: str = typer.Option(None, "--l", help="Path to zUMIs.sh"),
-    cfg_path: str = typer.Option(None, "--config", help="YAML config file"),
-    yaml_path: str = typer.Option(None, "--yaml", help="zUMIs YAML config file")
+    cfg_path: str = typer.Option(..., "--config", help="YAML config file")
 ):
     """Run zUMIs pipeline"""
     print("zUMIs Pipeline started")
-
-    if cfg_path and yaml_path:
-        raise typer.BadParameter(
-        "Please provide either --config or --yaml, not both"
-        )
-
-    if not cfg_path and not yaml_path:
-        raise typer.BadParameter(
-        "Please provide --config or --yaml"
-        )
     
     BASE_DIR = Path(__file__).resolve().parent
     cfg_file = BASE_DIR / "config" / ".config.yaml"
@@ -132,36 +121,23 @@ def zumis(
     print(f"Using zUMIs: {zpath}")
 
     # ========= config 检查 =========
-    
-    if cfg_path:
-    
-        cfg_path = Path(cfg_path)
+    cfg_path = Path(cfg_path)
 
-        if not cfg_path.exists():
-            raise typer.BadParameter(f"Config file not found: {cfg_path}")
+    if not cfg_path.exists():
+        raise typer.BadParameter(f"Config file not found: {cfg_path}")
 
-        print(f"Using config: {cfg_path}")
+    print(f"Using config: {cfg_path}")
 
-        cfg = load_yaml(cfg_path)
-        os.makedirs(get_config(cfg, "Out_dir"), exist_ok=True)
-        method = get_config(cfg, "Method")
-        cfg = config_cal(cfg, method)
-        qc_adapt(cfg)
-        check_adapter(cfg)
-        filled_yaml(cfg, zcfg_path)
-        final_yaml = zcfg_path
-
-    else:
-        # 用户直接提供 zUMIs yaml
-        final_yaml = Path(yaml_path)
-
-        if not final_yaml.exists():
-            raise typer.BadParameter(
-                f"zUMIs yaml not found: {final_yaml}"
-            )
     # ========= 运行 =========
-    zUMIs(zpath, final_yaml)
-    
+    cfg = load_yaml(cfg_path)
+    os.makedirs(get_config(cfg, "Out_dir"), exist_ok=True)
+    method = get_config(cfg, "Method")
+    cfg = config_cal(cfg, method)
+    print(cfg)
+    qc_adapt(cfg)
+    check_adapter(cfg)
+    filled_yaml(cfg, zcfg_path)
+    zUMIs(zpath,zcfg_path)
 
 @app.command(no_args_is_help = True)
 def astro(

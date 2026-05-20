@@ -113,6 +113,8 @@ def config_cal(cfg, method):
     """
     计算配置文件中的参数,如果advance里没有则默认
     """ 
+    thread = get_config(cfg,"Thread",16)
+    cfg['Thread'] =  thread
     valid_methods = {"ATAC", "RNA"}
     if method not in valid_methods:
         raise ValueError(f"Unknown method: {method}")

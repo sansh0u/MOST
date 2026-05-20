@@ -8,16 +8,16 @@ from config_utils import get_config
 logger = logging.getLogger("toolkit")
 from pathlib import Path
 
-def zUMIs(zpath, zcfg_path):
+def zUMIs(zpath, final_yaml):
     '''
     调用zUMIs,要把in1,in2,out写进去
     '''
     
     cmd = [
         zpath,
-        "-c", #-C是运行zumis自己的环境要重新下载，如果可以设置好conda
+        "-c", 
         "-y",
-        zcfg_path
+        final_yaml
     ]
     try: ####
         subprocess.run(cmd, check=True)

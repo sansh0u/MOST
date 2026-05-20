@@ -9,6 +9,7 @@ def filter(cfg,method):
     """
     根据提供的配置对ATAC-seq数据进行过滤
     """
+    print("Filtering started")
     # Placeholder for actual filtering logic需要校对logo信息
     #logger.info("Starting ATAC-seq quality control filtering...")
     if method == 'RNA':
@@ -28,7 +29,7 @@ def filter(cfg,method):
     restrictleft2 = get_config(cfg, "restrictleft2")
     
     cmd1 =  [
-        "bbduk",
+        "bbduk.sh",
         f"in={in1}", 
         f"in2={in2}",
         f"outm={out_dir}/linker1_R1.fastq.gz", 
@@ -43,7 +44,7 @@ def filter(cfg,method):
     ]
 
     cmd2 =  [
-        "bbduk",
+        "bbduk.sh",
         f"in={out_dir}/linker1_R1.fastq.gz",
         f"in2={out_dir}/linker1_R2.fastq.gz",
         f"outm={out_dir}/linker2_R1.fastq.gz", 
@@ -58,7 +59,7 @@ def filter(cfg,method):
     ]
     
     cmd3 = [
-        "bbduk",
+        "bbduk.sh",
         f"in={in1}", 
         f"in2={in2}",
         f"outm={out_dir}/linker2_R1.fastq.gz",

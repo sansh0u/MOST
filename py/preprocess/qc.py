@@ -76,7 +76,7 @@ def filter(cfg,method):
         if k2 != 0:
             subprocess.run(cmd1, check=True)
             subprocess.run(cmd2, check=True)
-            subprocess.run(["rm", "-r",f"{out_dir}/linker1_R1.fastq.gz", f"{out_dir}/linker1_R2.fastq.gz"], check=True)
+            #subprocess.run(["rm", "-r",f"{out_dir}/linker1_R1.fastq.gz", f"{out_dir}/linker1_R2.fastq.gz"], check=True)
         else:
             subprocess.run(cmd3, check=True)
             

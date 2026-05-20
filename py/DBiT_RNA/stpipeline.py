@@ -26,7 +26,7 @@ def stpipeline(cfg):
     output_folder = f"{get_config(cfg, 'Out_dir')}"
     temp_folder = f"{get_config(cfg, 'Out_dir')}/temp"
     os.makedirs(temp_folder, exist_ok=True)
-    output_file_R2 = f"{get_config(cfg, 'Out_dir')}/linker2_R1.fastq.gz"
+    output_file_R2 = f"{get_config(cfg, 'Out_dir')}/filtered_R1.fastq.gz"
     output_file_R1 = f"{get_config(cfg, 'Out_dir')}/output_R2.fastq.gz"
     b_file = f"{get_config(cfg, 'Out_dir')}/linker2_R2.fastq.gz"
     star_index = get_config(cfg, 'star_index')
@@ -62,4 +62,4 @@ def stpipeline(cfg):
     except subprocess.CalledProcessError as e:
         #logger.error(f"Error during chromap analysis: {e}")
         raise
-    subprocess.run(["rm", "-r",output_file_R1, output_file_R2, b_file, out_gtf], check=True)
+    #subprocess.run(["rm", "-r",output_file_R1, output_file_R2, b_file, out_gtf], check=True)

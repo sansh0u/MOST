@@ -52,7 +52,7 @@ def dbit_bc(cfg):
     """
     BC2,BC1,UMI
     """
-
+    
     input_file = get_config(cfg, "Out_dir") + "/linker2_R2.fastq.gz"
     output_file = get_config(cfg, "Out_dir") + "/output_R2.fastq"
     
@@ -73,3 +73,4 @@ def dbit_bc(cfg):
                 out_handle.write("@%s\n%s\n+\n%s\n" % (title, new_seq, new_qual))
     
     subprocess.run(["pigz", "-p", thread, "-f", output_file], check=True)
+    #subprocess.run(["rm", "-r",input_file], check=True)

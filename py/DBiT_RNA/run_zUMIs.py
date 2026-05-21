@@ -4,7 +4,6 @@ import os
 import typer
 import yaml
 from yaml_load import load_yaml
-from config_utils import get_config
 logger = logging.getLogger("toolkit")
 from pathlib import Path
 
@@ -29,14 +28,15 @@ def filled_yaml(cfg, cfg_path):
 # -----------------------
 # 填参数
 # -----------------------
-    bc2_start = get_config(cfg, "bc2_start")
-    bc2_end = get_config(cfg, "bc2_end")
-    bc1_start = get_config(cfg, "bc1_start")
-    bc1_end = get_config(cfg, "bc1_end")
-    umi_start = get_config(cfg, "umi_start")
-    umi_len = get_config(cfg, "umi_len")
-    out_dir = get_config(cfg, "Out_dir")
+    bc2_start = cfg.runtime.bc2_start
+    bc2_end = cfg.runtime.bc2_end
+    bc1_start = cfg.runtime.bc1_start
+    bc1_end = cfg.runtime.bc1_end
+    umi_start = cfg.runtime.umi_start
+    umi_len = cfg.runtime.umi_len
+    out_dir = cfg.out_dir
     out_dir = Path(out_dir)
+    
     bc_str = (
     f"BC("
     f"{bc2_start+1}-{bc2_end},"
@@ -52,24 +52,24 @@ def filled_yaml(cfg, cfg_path):
     
     with open(cfg_path) as f:
         zcfg = yaml.safe_load(f)
-    zcfg["project"] = get_config(cfg, "Project")
+    zcfg["project"] = cfg.project
 
-    zcfg["sequence_files"]["file1"]["name"] = get_config(cfg, "file1")
+    zcfg["sequence_files"]["file1"]["name"] = cfg.sequence_file.file1
     zcfg["sequence_files"]["file1"]["base_definition"] = [
         "cDNA(1,100)"
     ]
 
-    zcfg["sequence_files"]["file2"]["name"] = get_config(cfg, "file2")
+    zcfg["sequence_files"]["file2"]["name"] = cfg.sequence_file.file2
     zcfg["sequence_files"]["file2"]["base_definition"] = [
         bc_str,
         umi_str
     ]
-    zcfg["reference"]["STAR_index"] = get_config(cfg, "star_index")
-    zcfg["reference"]["GTF_file"] = get_config(cfg, "gtf_file")
+    zcfg["reference"]["STAR_index"] = cfg.reference.star_index
+    zcfg["reference"]["GTF_file"] = cfg.reference.gtf_file
 
-    zcfg["out_dir"] = get_config(cfg, "Out_dir")
+    zcfg["out_dir"] = cfg.out_dir
 
-    zcfg["barcodes"]["barcode_file"] =  get_config(cfg, "barcode_file")
+    zcfg["barcodes"]["barcode_file"] =  cfg.reference.barcode_file
 
     # -----------------------
     # 输出新yaml

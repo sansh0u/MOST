@@ -1,6 +1,5 @@
 import gzip
 import numpy as np
-from yaml_load import get_config
 from collections import Counter
 import math
 import matplotlib.pyplot as plt
@@ -303,8 +302,8 @@ def scan_adapter_positions(seqs, query, max_mismatch, window):
 def scan(cfg,method):
 
     MAX_READS = 100000
-    fastq = get_config(cfg, "file2")
-    barcode_file = get_config(cfg, "barcode_file")
+    fastq = cfg.sequence_file.file2
+    barcode_file = cfg.reference.barcode_file
 
     seqs = read_fastq_head(fastq, MAX_READS)
     print(f"reads loaded: {len(seqs)}")
@@ -382,10 +381,10 @@ def scan(cfg,method):
 def check_adapter(cfg):
     
     MAX_READS = 100000
-    fastq = get_config(cfg, "file1")
+    fastq = cfg.sequence_file.file1
     seqs1 = read_fastq_head(fastq, MAX_READS)
-    Adapter = get_config(cfg, "adapter","AAGCAGTGGTATCAACGCAGAGTGAATGGG")
-    mismatch = get_config(cfg, "adapter_mismatch", 2)
+    Adapter = cfg.runtime.adapter
+    mismatch = cfg.runtime.adapter_mismatch
 
     if Adapter:
         hits = scan_adapter_positions(seqs1, Adapter, mismatch, 50)
@@ -405,7 +404,7 @@ def check_adapter(cfg):
     return score
 
 def scan_len(cfg):
-    fastq = get_config(cfg, "file2")
+    fastq = cfg.sequence_file.file2
     seqs = read_fastq_head(fastq, 1)
     print(f"reads loaded: {len(seqs)}")
     read_len = len(seqs[0])

@@ -4,7 +4,6 @@ import typer
 import os
 import logging
 from yaml_load import load_yaml,  config_cal,setup_logger
-from config_utils import get_config
 from DBiT_RNA.run_zUMIs import zUMIs, filled_yaml
 from preprocess.qc import filter
 from ATAC.chromap import chromap, sort_bed
@@ -47,9 +46,9 @@ def run(
     print("Pipeline started")
 
     cfg = load_yaml(cfg_path)
-    os.makedirs(get_config(cfg, "Out_dir"), exist_ok=True)
-    method = get_config(cfg, "Method")
-    cfg = config_cal(cfg, method)
+    os.makedirs(cfg.out_dir, exist_ok=True)
+    method = cfg.method
+    cfg = config_cal(cfg)
     
 
     if method == "ATAC":
@@ -60,11 +59,11 @@ def run(
         sort_bed(cfg)
 
     elif method == "RNA":
-        #print(cfg)
-        qc_adapt(cfg)
-        filter(cfg,method)
-        dbit_bc(cfg)
-        stpipeline(cfg)
+        print(cfg)
+        #qc_adapt(cfg)
+        #filter(cfg,method)
+        #dbit_bc(cfg)
+        #stpipeline(cfg)
 
 
 @app.command(no_args_is_help=True)
@@ -132,9 +131,9 @@ def zumis(
 
     # ========= 运行 =========
     cfg = load_yaml(cfg_path)
-    os.makedirs(get_config(cfg, "Out_dir"), exist_ok=True)
-    method = get_config(cfg, "Method")
-    cfg = config_cal(cfg, method)
+    os.makedirs(cfg.out_dir, exist_ok=True)
+    method = cfg.method
+    cfg = config_cal(cfg)
     print(cfg)
     qc_adapt(cfg)
     check_adapter(cfg)
@@ -159,9 +158,9 @@ def astro(
     --steps 7 \
     --outputfolder output/"""
     cfg = load_yaml(cfg_path)
-    os.makedirs(get_config(cfg, "Out_dir"), exist_ok=True)
-    method = get_config(cfg, "Method")
-    cfg = config_cal(cfg, method)
+    os.makedirs(cfg.out_dir, exist_ok=True)
+    method = cfg.method
+    cfg = config_cal(cfg)
     
 
 @app.command(no_args_is_help = True)

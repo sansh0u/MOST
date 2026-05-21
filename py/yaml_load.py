@@ -8,9 +8,8 @@ import yaml
 import logging
 import os
 from pathlib import Path
-from config_utils import get_config
 from preprocess.scan_bc import scan,scan_len
-
+from config_utils import Config
 logger = logging.getLogger("toolkit")
 
 
@@ -48,48 +47,55 @@ def setup_logger():
 
     return logger
 
-def get_config(cfg, key, default=None):
-    if isinstance(cfg, dict):
-        if key in cfg and cfg[key] is not None:
-            return cfg[key]
-        for v in cfg.values():
-            result = get_config(v, key, default)
-            if result is not None:
-                return result
-    elif isinstance(cfg, list):
-        for item in cfg:
-            result = get_config(item, key, default)
-            if result is not None:
-                return result
-    return default
 
 def load_yaml(cfg_path):
     """
     Load YAML configuration file. 加载并判断YAML配置文件是否存在并可解析(已完成)
     """
     try:
-        with open(cfg_path, "r", encoding="utf-8") as f:
-            cfg = yaml.safe_load(f)
-        
+
+        with open(
+            cfg_path,
+            "r",
+            encoding="utf-8"
+        ) as f:
+
+            data = yaml.safe_load(f)
+
+        if data is None:
+
+            raise ValueError(
+                "YAML file is empty"
+            )
+
+        cfg = Config(**data)
+
+        return cfg
+
     except FileNotFoundError:
-        logging.error(f"Configuration file not found: {cfg_path}")
-        return None
+
+        logging.error(
+            f"Configuration file not found: "
+            f"{cfg_path}"
+        )
+
+        raise
+
     except yaml.YAMLError as e:
-        logging.error(f"Error parsing YAML file {cfg_path}: {e}")
-        return None
+
+        logging.error(
+            f"YAML parse error: {e}"
+        )
+
+        raise
+
     except Exception as e:
-        #logger.error(f"Unexpected error reading config: {e}")
-        return None
-    if cfg is None:
-        #logger.error("YAML file is empty.")
-        return None
-    #直接输出config，要什么调用的时候自己取
-    default_barcode = ( Path(__file__).resolve().parent / "barcode" / "20240614_2500barcode_AB_update.txt")
-    barcode_file = get_config(cfg, "barcode_file",default_barcode)
-    cfg["Reference"]["barcode_file"] = str(barcode_file)
-    cfg["Project"] = get_config(cfg, "Project", "project")
-    cfg["Threads"] =  get_config(cfg,"Threads",16)
-    return cfg
+
+        logging.error(
+            f"Failed to load config: {e}"
+        )
+
+        raise
 
 def convert_range(r):
     # r like "23-32"
@@ -110,64 +116,95 @@ def parse_pair(s):
 
     return bc2_start, bc1_start, bc_len
 
-def config_cal(cfg, method):
+def config_cal(cfg):
     """
     计算配置文件中的参数,如果advance里没有则默认
     """ 
-    
-    valid_methods = {"ATAC", "RNA"}
-    if method not in valid_methods:
-        raise ValueError(f"Unknown method: {method}")
+    method = cfg.method
 
-    umi = get_config(cfg, "UMI")
-    bc = get_config(cfg, "BC")
+    umi = cfg.advanced.UMI
 
-    if bc and umi is not None:
+    bc = cfg.advanced.BC
+
+    if umi is not None and bc is not None:
+
         umi_start, umi_len = convert_range(umi)
-        bc2_start, bc1_start,bc_len  = parse_pair(bc)
+
+        bc2_start, bc1_start, bc_len = parse_pair(bc)
+
         read_len = scan_len(cfg)
+
     else:
-        print("No UMI or BC found in config file. Enter automatic mode.")
+
+        print(
+            "No UMI or BC found in config. Enter auto mode."
+        )
+
         result = scan(cfg, method)
+
         bc2_start = result["bc2"]
+
         bc1_start = result["bc1"]
+
         bc_len = result["bc_len"]
+
         read_len = result["read_len"]
+
         umi_start = result["umi_start"]
+
         umi_len = result["umi_len"]
-    
+
     bc2_end = bc2_start + bc_len
+
     bc1_end = bc1_start + bc_len
-    primer = get_config(cfg, "primer", "CAAGCGTTGGCTTCTCGCATCT")
-    linker1 = get_config(cfg, "linker1", "GTGGCCGATGTTTCGCATCGGCGTACGACT")
-    linker2 = get_config(cfg, "linker2", "ATCCACGTGCTTGAGAGGCCAGAGCATTCG")
+
+    primer = cfg.advanced.primer
+
+    linker1 = cfg.advanced.linker1
+
+    linker2 = cfg.advanced.linker2
 
     if read_len == 100:
+
         linker2 = ""
-    
+
     k1 = len(linker1)
+
     k2 = len(linker2)
 
     restrictleft1 = bc1_end + k1 + umi_len
+
     restrictleft2 = bc2_end + k2 + umi_len
-    seq_start = bc1_end + k1 + umi_len + 19
-    cfg['Advanced'] = {
-        'k1': k1,
-        'k2': k2,
-        'bc2_start': bc2_start,
-        'bc2_end': bc2_end,
-        'bc1_start': bc1_start,
-        'bc1_end': bc1_end,
-        'restrictleft1': restrictleft1,
-        'restrictleft2': restrictleft2,
-        'seq_start': seq_start,
-        'umi_start': umi_start,
-        'umi_len': umi_len,
-        'linker1': linker1,
-        'linker2': linker2,
-        'primer': primer
-    }
-    
+
+    if umi_start < bc2_start:
+
+        seq_start = bc1_end + k1  + 19
+    else:
+        seq_start = bc1_end + k1 + umi_len + 19
+
+    cfg.runtime.k1 = k1
+
+    cfg.runtime.k2 = k2
+
+    cfg.runtime.bc2_start = bc2_start
+
+    cfg.runtime.bc2_end = bc2_end
+
+    cfg.runtime.bc1_start = bc1_start
+
+    cfg.runtime.bc1_end = bc1_end
+
+    cfg.runtime.restrictleft1 = \
+        restrictleft1
+
+    cfg.runtime.restrictleft2 = \
+        restrictleft2
+
+    cfg.runtime.seq_start = seq_start
+
+    cfg.runtime.umi_start = umi_start
+
+    cfg.runtime.umi_len = umi_len
+
     return cfg
-
-
+    

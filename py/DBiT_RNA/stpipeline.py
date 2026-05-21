@@ -1,6 +1,5 @@
 import logging
 import subprocess
-from config_utils import get_config
 import os
 
 logger = logging.getLogger("toolkit")
@@ -22,17 +21,17 @@ def stpipeline(cfg):
     """
     根据提供的配置对DBiT-seq数据进行chromap分析
     """
-    stpipeline_id = get_config(cfg, 'Project', 'stpipeline')
-    output_folder = f"{get_config(cfg, 'Out_dir')}"
-    temp_folder = f"{get_config(cfg, 'Out_dir')}/temp"
+    stpipeline_id = cfg.project
+    output_folder = f"{cfg.out_dir}"
+    temp_folder = f"{cfg.out_dir}/temp"
     os.makedirs(temp_folder, exist_ok=True)
-    output_file_R2 = f"{get_config(cfg, 'Out_dir')}/filtered_R1.fastq.gz"
-    output_file_R1 = f"{get_config(cfg, 'Out_dir')}/output_R2.fastq.gz"
-    b_file = f"{get_config(cfg, 'Out_dir')}/linker2_R2.fastq.gz"
-    star_index = get_config(cfg, 'star_index')
-    gtf_file = get_config(cfg, 'gtf_file')
-    bc_file = get_config(cfg, 'barcode_file')
-    thread = str(get_config(cfg, 'Threads'))
+    output_file_R2 = f"{cfg.out_dir}/filtered_R1.fastq.gz"
+    output_file_R1 = f"{cfg.out_dir}/output_R2.fastq.gz"
+    b_file = f"{cfg.out_dir}/linker2_R2.fastq.gz"
+    star_index = cfg.reference.star_index
+    gtf_file = cfg.reference.gtf_file
+    bc_file = cfg.reference.barcode_file
+    thread = str(cfg.threads)
     
     out_gtf = unzip(gtf_file,thread)
 

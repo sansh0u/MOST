@@ -1,6 +1,5 @@
 import subprocess
 import logging
-from yaml_load import get_config
 
 logger = logging.getLogger("toolkit")
 
@@ -13,20 +12,20 @@ def filter(cfg,method):
     # Placeholder for actual filtering logic需要校对logo信息
     #logger.info("Starting ATAC-seq quality control filtering...")
     if method == 'RNA':
-        in1 = get_config(cfg, "Out_dir")+ "/filtered_R1.fastq"
-        in2 = get_config(cfg, "Out_dir")+ "/filtered_R2.fastq"
+        in1 = cfg.out_dir+ "/filtered_R1.fastq"
+        in2 = cfg.out_dir+ "/filtered_R2.fastq"
     else:
-        in1 = get_config(cfg, "file1")
-        in2 = get_config(cfg, "file2")
-    out_dir = get_config(cfg, "Out_dir")
+        in1 = cfg.sequence_file.file1
+        in2 = cfg.sequence_file.file2
+    out_dir = cfg.out_dir
    
-    k1 = get_config(cfg, "k1")
-    k2 = get_config(cfg, "k2")
-    threads = get_config(cfg, "Threads")
-    linker1 = get_config(cfg, "linker1")
-    linker2 = get_config(cfg, "linker2")
-    restrictleft1 = get_config(cfg, "restrictleft1")
-    restrictleft2 = get_config(cfg, "restrictleft2")
+    k1 = cfg.runtime.k1
+    k2 = cfg.runtime.k2
+    threads = cfg.threads
+    linker1 = cfg.runtime.linker1
+    linker2 = cfg.runtime.linker2
+    restrictleft1 = cfg.runtime.restrictleft1
+    restrictleft2 = cfg.runtime.restrictleft2
     
     cmd1 =  [
         "bbduk.sh",

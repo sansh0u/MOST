@@ -2,7 +2,6 @@ from Bio.SeqIO.QualityIO import FastqGeneralIterator
 from gzip import open as gzopen
 import logging
 import subprocess
-from yaml_load import get_config
 #import argparse
 
 logger = logging.getLogger("toolkit")
@@ -14,17 +13,17 @@ def atac_bc(cfg):
     '''
     
     
-    input_file = get_config(cfg, "Out_dir") + "/linker2_R2.fastq.gz"
-    output_file_R1 = get_config(cfg, "Out_dir") + "/output_R1.fastq"
-    output_file_R2 = get_config(cfg, "Out_dir") + "/output_R2.fastq"
+    input_file = cfg.out_dir + "/linker2_R2.fastq.gz"
+    output_file_R1 = cfg.out_dir + "/output_R1.fastq"
+    output_file_R2 = cfg.out_dir + "/output_R2.fastq"
 
     
-    seq_start = get_config(cfg, "seq_start")
-    bc2_start = get_config(cfg, "bc2_start")    
-    bc2_end = get_config(cfg, "bc2_end")
-    bc1_start = get_config(cfg, "bc1_start")
-    bc1_end = get_config(cfg, "bc1_end")
-    thread = get_config(cfg, "Thread")
+    seq_start = cfg.runtime.seqstart
+    bc2_start = cfg.runtime.bc2_start   
+    bc2_end = cfg.runtime.bc2_end
+    bc1_start = cfg.runtime.bc1_start
+    bc1_end = cfg.runtime.bc1_end
+    thread = cfg.threads
     """
     logger.info(f"input_file: {input_file}")
     logger.info(f"output_file_R1: {output_file_R1}")
@@ -53,16 +52,16 @@ def dbit_bc(cfg):
     BC2,BC1,UMI
     """
     
-    input_file = get_config(cfg, "Out_dir") + "/linker2_R2.fastq.gz"
-    output_file = get_config(cfg, "Out_dir") + "/output_R2.fastq"
+    input_file = cfg.out_dir + "/linker2_R2.fastq.gz"
+    output_file = cfg.out_dir + "/output_R2.fastq"
     
-    umi_start = get_config(cfg, "umi_start")
-    umi_len = get_config(cfg, "umi_len")
-    bc2_start = get_config(cfg, "bc2_start")
-    bc2_end = get_config(cfg, "bc2_end")
-    bc1_start = get_config(cfg, "bc1_start")
-    bc1_end = get_config(cfg, "bc1_end")
-    thread = get_config(cfg, "Thread")
+    umi_start = cfg.runtime.umi_start
+    umi_len = cfg.runtime.umi_len
+    bc2_start = cfg.runtime.bc2_start
+    bc2_end = cfg.runtime.bc2_end
+    bc1_start = cfg.runtime.bc1_start
+    bc1_end = cfg.runtime.bc1_end
+    thread = cfg.threads
 
 
     with gzopen(input_file, "rt") as in_handle:

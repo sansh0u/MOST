@@ -1,16 +1,15 @@
 import subprocess
 import logging
-from config_utils import get_config
 from preprocess.scan_bc import check_adapter
 
 logger = logging.getLogger("toolkit")
 
 def qc_adapt(cfg):
-    Adapter = get_config(cfg, "adapter","AAGCAGTGGTATCAACGCAGAGTGAATGGG")
-    CleanFq1 = get_config(cfg, "Out_dir")+ "/filtered_R1.fastq"
-    CleanFq2 = get_config(cfg, "Out_dir")+ "/filtered_R2.fastq"
-    fastq_intput_1 = get_config(cfg, "file1")
-    fastq_intput_2 = get_config(cfg, "file2")
+    Adapter = cfg.advanced.adapter
+    CleanFq1 = cfg.out_dir + "/filtered_R1.fastq"
+    CleanFq2 = cfg.out_dir + "/filtered_R2.fastq"
+    fastq_intput_1 = cfg.sequence_file.file1
+    fastq_intput_2 = cfg.sequence_file.file2
     score = check_adapter(cfg)
     """
     QC and adapt the primer to the fastq files.

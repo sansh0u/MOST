@@ -1,31 +1,30 @@
-Project: #test
+project: #test
 
-Method: RNA #ATAC/RNA
+method: RNA #ATAC/RNA
 
-Sequence_file:
+sequence_file:
   file1: /mnt/d/prog/RNA2_1209_Illu_1.fq.gz
   file2: /mnt/d/prog/RNA2_1209_Illu_2.fq.gz
 
-Reference:
+reference:
   index_file: /home/sanshou/project/toolkit/toolkit/index/GRCm38.primary_assembly.genome.index
   fa_file: /home/sanshou/project/toolkit/toolkit/index/human/GRCh38.primary_assembly.genome.fa
   gtf_file: /home/sanshou/project/toolkit/toolkit/index/human/gencode.v48.primary_assembly.annotation.gtf
   star_index: /home/sanshou/project/toolkit/star_index1
   barcode_file:
 
-Out_dir: /home/sanshou/project/toolkit/output/
+out_dir: /home/sanshou/project/toolkit/output/
 
-Threads: 8
+threads: 8
 
-Advanced:
+advanced:
   primer: #CAAGCGTTGGCTTCTCGCATCT
   linker1: #GTGGCCGATGTTTCGCATCGGCGTACGACT
   linker2: #ATCCACGTGCTTGAGAGGCCAGAGCATTCG
   
-  UMI: #(23-32)
-  BC: #(33-40,71-78)
+  UMI: (23-32) #(23-32)
+  BC: (33-40,71-78) #(33-40,71-78)
   
   hdist: #3
-  rna_lib: #pcr/illumina
   adapter: #AAGCAGTGGTATCAACGCAGAGTGAATGGG
   adapter_mismatch:

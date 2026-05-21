@@ -88,6 +88,8 @@ def load_yaml(cfg_path):
     barcode_file = get_config(cfg, "barcode_file",default_barcode)
     cfg["Reference"]["barcode_file"] = str(barcode_file)
     cfg["Project"] = get_config(cfg, "Project", "project")
+    thread = get_config(cfg,"Thread",16)
+    cfg["Thread"] =  get_config(cfg,"Thread",16)
     return cfg
 
 def convert_range(r):
@@ -113,8 +115,7 @@ def config_cal(cfg, method):
     """
     计算配置文件中的参数,如果advance里没有则默认
     """ 
-    thread = get_config(cfg,"Thread",16)
-    cfg['Thread'] =  thread
+    
     valid_methods = {"ATAC", "RNA"}
     if method not in valid_methods:
         raise ValueError(f"Unknown method: {method}")

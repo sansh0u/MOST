@@ -50,20 +50,21 @@ def run(
     os.makedirs(get_config(cfg, "Out_dir"), exist_ok=True)
     method = get_config(cfg, "Method")
     cfg = config_cal(cfg, method)
-    print(cfg)
+    
 
     if method == "ATAC":
+        #print(cfg)
         filter(cfg,method)
         atac_bc(cfg)
         chromap(cfg)
         sort_bed(cfg)
 
     elif method == "RNA":
-        print(cfg)
-        #qc_adapt(cfg)
-        #filter(cfg,method)
-        #dbit_bc(cfg)
-        #stpipeline(cfg)
+        #print(cfg)
+        qc_adapt(cfg)
+        filter(cfg,method)
+        dbit_bc(cfg)
+        stpipeline(cfg)
 
 
 @app.command(no_args_is_help=True)

@@ -88,8 +88,7 @@ def load_yaml(cfg_path):
     barcode_file = get_config(cfg, "barcode_file",default_barcode)
     cfg["Reference"]["barcode_file"] = str(barcode_file)
     cfg["Project"] = get_config(cfg, "Project", "project")
-    thread = get_config(cfg,"Thread",16)
-    cfg["Thread"] =  get_config(cfg,"Thread",16)
+    cfg["Threads"] =  get_config(cfg,"Threads",16)
     return cfg
 
 def convert_range(r):

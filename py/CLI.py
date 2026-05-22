@@ -60,9 +60,9 @@ def run(
 
     elif method == "RNA":
         #print(cfg)
-        #qc_adapt(cfg)
-        #filter(cfg,method)
-        #dbit_bc(cfg)
+        qc_adapt(cfg)
+        filter(cfg,method)
+        dbit_bc(cfg)
         stpipeline(cfg)
 
 

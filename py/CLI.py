@@ -62,7 +62,7 @@ def run(
         #print(cfg)
         #qc_adapt(cfg)
         #filter(cfg,method)
-        dbit_bc(cfg)
+        #dbit_bc(cfg)
         stpipeline(cfg)
 
 

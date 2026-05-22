@@ -59,9 +59,9 @@ def run(
         sort_bed(cfg)
 
     elif method == "RNA":
-        print(cfg)
-        qc_adapt(cfg)
-        filter(cfg,method)
+        #print(cfg)
+        #qc_adapt(cfg)
+        #filter(cfg,method)
         dbit_bc(cfg)
         stpipeline(cfg)
 

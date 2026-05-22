@@ -37,11 +37,13 @@ def qc_adapt(cfg):
 ]
     try: ####
         if score >= 0.5:
-            subprocess.run(cmd1, check=True)
             print("Trimming Adapter")
+            subprocess.run(cmd1, check=True)
+            
         else:
-            subprocess.run(cmd2, check=True)
             print("Trimming ployA")
+            subprocess.run(cmd2, check=True)
+            
     except subprocess.CalledProcessError as e:
             logger.error(f"Error during DBiT-seq filtering: {e}")
             raise

@@ -44,8 +44,8 @@ def atac_bc(cfg):
             out_handle_R1.write("@%s\n%s\n+\n%s\n" % (title, new_seq_R1, new_qual_R1))
             out_handle_R2.write("@%s\n%s\n+\n%s\n" % (title, barcode, new_qual_R2))
     
-    subprocess.run(["pigz", "-p", thread, "-f", output_file_R1], check=True)
-    subprocess.run(["pigz", "-p", thread, "-f", output_file_R2], check=True)
+    subprocess.run(["pigz", "-p", str(thread), "-f", output_file_R1], check=True)
+    subprocess.run(["pigz", "-p", str(thread), "-f", output_file_R2], check=True)
 
 def dbit_bc(cfg):
     """
@@ -71,5 +71,5 @@ def dbit_bc(cfg):
                 new_qual = qual[bc2_start:bc2_end] + qual[bc1_start:bc1_end] + qual[umi_start:umi_start+umi_len]
                 out_handle.write("@%s\n%s\n+\n%s\n" % (title, new_seq, new_qual))
     
-    subprocess.run(["pigz", "-p", thread, "-f", output_file], check=True)
+    subprocess.run(["pigz", "-p", str(thread), "-f", output_file], check=True)
     #subprocess.run(["rm", "-r",input_file], check=True)

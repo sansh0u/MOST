@@ -383,8 +383,8 @@ def check_adapter(cfg):
     MAX_READS = 100000
     fastq = cfg.sequence_file.file1
     seqs1 = read_fastq_head(fastq, MAX_READS)
-    Adapter = cfg.runtime.adapter
-    mismatch = cfg.runtime.adapter_mismatch
+    Adapter = cfg.advanced.adapter
+    mismatch = cfg.advanced.adapter_mismatch
 
     if Adapter:
         hits = scan_adapter_positions(seqs1, Adapter, mismatch, 50)

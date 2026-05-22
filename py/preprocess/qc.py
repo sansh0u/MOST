@@ -12,8 +12,8 @@ def filter(cfg,method):
     # Placeholder for actual filtering logic需要校对logo信息
     #logger.info("Starting ATAC-seq quality control filtering...")
     if method == 'RNA':
-        in1 = cfg.out_dir+ "/filtered_R1.fastq"
-        in2 = cfg.out_dir+ "/filtered_R2.fastq"
+        in1 = cfg.out_dir+ "/filtered_R1.fastq.gz"
+        in2 = cfg.out_dir+ "/filtered_R2.fastq.gz"
     else:
         in1 = cfg.sequence_file.file1
         in2 = cfg.sequence_file.file2

@@ -6,8 +6,8 @@ logger = logging.getLogger("toolkit")
 
 def qc_adapt(cfg):
     Adapter = cfg.advanced.adapter
-    CleanFq1 = cfg.out_dir + "/filtered_R1.fastq"
-    CleanFq2 = cfg.out_dir + "/filtered_R2.fastq"
+    CleanFq1 = cfg.out_dir + "/filtered_R1.fastq.gz"
+    CleanFq2 = cfg.out_dir + "/filtered_R2.fastq.gz"
     fastq_intput_1 = cfg.sequence_file.file1
     fastq_intput_2 = cfg.sequence_file.file2
     score = check_adapter(cfg)

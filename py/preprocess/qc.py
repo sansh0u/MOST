@@ -22,8 +22,8 @@ def filter(cfg,method):
     k1 = cfg.runtime.k1
     k2 = cfg.runtime.k2
     threads = cfg.threads
-    linker1 = cfg.runtime.linker1
-    linker2 = cfg.runtime.linker2
+    linker1 = cfg.advanced.linker1
+    linker2 = cfg.advanced.linker2
     restrictleft1 = cfg.runtime.restrictleft1
     restrictleft2 = cfg.runtime.restrictleft2
     

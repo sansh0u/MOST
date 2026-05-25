@@ -135,7 +135,7 @@ def zumis(
     method = cfg.method
     cfg = config_cal(cfg)
     print(cfg)
-    qc_adapt(cfg)
+    #qc_adapt(cfg)
     filled_cfg = filled_yaml(cfg, zcfg_path)
     zUMIs(zpath,filled_cfg)
 

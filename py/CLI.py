@@ -131,15 +131,14 @@ def zumis(
 
     # ========= 运行 =========
     cfg = load_yaml(cfg_path)
-    filledcfg= cfg.out_dir / "filled.yaml"
     os.makedirs(cfg.out_dir, exist_ok=True)
     method = cfg.method
     cfg = config_cal(cfg)
     print(cfg)
     qc_adapt(cfg)
     check_adapter(cfg)
-    filled_yaml(cfg, zcfg_path)
-    zUMIs(zpath,filledcfg)
+    filled_cfg = filled_yaml(cfg, zcfg_path)
+    zUMIs(zpath,filled_cfg)
 
 @app.command(no_args_is_help = True)
 def astro(

@@ -7,7 +7,7 @@ from yaml_load import load_yaml
 logger = logging.getLogger("toolkit")
 from pathlib import Path
 
-def zUMIs(zpath, filledcfg):
+def zUMIs(zpath, filled_cfg):
     '''
     调用zUMIs,要把in1,in2,out写进去
     '''
@@ -16,7 +16,7 @@ def zUMIs(zpath, filledcfg):
         zpath,
         "-c", 
         "-y",
-        filledcfg
+        filled_cfg
     ]
     try: ####
         subprocess.run(cmd, check=True)
@@ -56,7 +56,7 @@ def filled_yaml(cfg, cfg_path):
 
     zcfg["sequence_files"]["file1"]["name"] = cfg.sequence_file.file1
     zcfg["sequence_files"]["file1"]["base_definition"] = [
-        "cDNA(1,100)"
+        "cDNA(1-100)"
     ]
 
     zcfg["sequence_files"]["file2"]["name"] = cfg.sequence_file.file2
@@ -75,10 +75,14 @@ def filled_yaml(cfg, cfg_path):
     # 输出新yaml
     # -----------------------
 
-    with open(out_dir/"filled.yaml", "w") as f:
+    filled_path = out_dir / "filled.yaml"
+
+    with open(filled_path, "w") as f:
         yaml.dump(
             zcfg,
             f,
             default_flow_style=False,
             sort_keys=False
         )
+
+    return filled_path

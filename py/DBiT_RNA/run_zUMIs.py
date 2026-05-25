@@ -6,6 +6,7 @@ import yaml
 from yaml_load import load_yaml
 logger = logging.getLogger("toolkit")
 from pathlib import Path
+from stpipeline import unzip
 
 def zUMIs(zpath, filled_cfg):
     '''
@@ -36,7 +37,9 @@ def filled_yaml(cfg, cfg_path):
     umi_len = cfg.runtime.umi_len
     out_dir = cfg.out_dir
     out_dir = Path(out_dir)
-    
+    thread = str(cfg.threads)
+    gtf_file = cfg.reference.gtf_file
+    out_gtf = unzip(gtf_file, thread)
     bc_str = (
     f"BC("
     f"{bc2_start+1}-{bc2_end},"
@@ -65,7 +68,7 @@ def filled_yaml(cfg, cfg_path):
         umi_str
     ]
     zcfg["reference"]["STAR_index"] = cfg.reference.star_index
-    zcfg["reference"]["GTF_file"] = cfg.reference.gtf_file
+    zcfg["reference"]["GTF_file"] = out_gtf
 
     zcfg["out_dir"] = cfg.out_dir
 

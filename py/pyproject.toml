@@ -1,7 +1,0 @@
-[project]
-name = "toolkit"
-version = "0.1.0"
-description = "A toolkit for RNA-seq and ATAC-seq analysis"
-
-[project.scripts]
-toolkit ="toolkit.cli:app"

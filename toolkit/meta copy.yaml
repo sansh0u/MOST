@@ -6,11 +6,7 @@ source:
   url: https://github.com/sansh0u/toolkit/archive/refs/tags/v0.1.0.tar.gz
   fn: toolkit-0.1.0.tar.gz
 
-  git_url: https://github.com/sdparekh/zUMIs.git
-  git_rev: 2039a90913b1b12e4fa48212fe6054badc1d1c09
-  folder: zUMIs
 build:
-  noarch: python
   script: | 
     {{ PYTHON }} -m pip install . --no-deps -vv #在测试时加-vv
 
@@ -24,24 +20,22 @@ requirements:
     - python >=3.10
     - pip
   run:
-    - gcc_linux-64 >=11
-    - gxx_linux-64 >=11
     - python >=3.10
     - biopython >=1.86
     - pyyaml >=6.0.3
     - chromap >=0.3.2
     - openjdk >=11
     - pigz >=2.6
-    - htslib >=1.13+ds
+    - htslib >=1.13
     - cutadapt >=3.5
     - numpy >=1.24.2
     - bbduk >=39.81
     - stpipeline >=2.1.0
-    - star >=2.7.3a
+    - star >=2.7.11b
     - samtools >=1.23.1
     - snapatac2 >=2.9.0
-    - opencv-python
-    - hmmlearn
+    - opencv
+about:
   home: https://github.com/sansh0u/toolkit
   summary: "My bioinformatics tool"
   license: GPL-3.0

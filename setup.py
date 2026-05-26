@@ -2,17 +2,14 @@ from setuptools import setup, find_packages
 
 setup(
     name="toolkit",
-    version="1.0.0",
+    version="0.1.0",
     packages=find_packages(),
     install_requires=[
-        "typer",
-        "pyyaml",
-        "biopython",
-        "chromap",
+        "stpipeline"
     ],
     entry_points={
         "console_scripts": [
-            "toolkit = toolkit.cli:app",  #修改toolkit名字
+            "toolkit = toolkit.CLI:app",  #修改toolkit名字
         ],
     },
 )

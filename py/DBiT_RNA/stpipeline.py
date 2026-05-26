@@ -25,8 +25,8 @@ def stpipeline(cfg):
     output_folder = f"{cfg.out_dir}"
     temp_folder = f"{cfg.out_dir}/temp"
     os.makedirs(temp_folder, exist_ok=True)
-    output_file_R2 = f"{cfg.out_dir}/linker2_R1.fastq.gz"
     output_file_R1 = f"{cfg.out_dir}/output_R2.fastq.gz"
+    output_file_R2 = f"{cfg.out_dir}/linker2_R1.fastq.gz"
     b_file = f"{cfg.out_dir}/linker2_R2.fastq.gz"
     star_index = cfg.reference.star_index
     gtf_file = cfg.reference.gtf_file
@@ -50,8 +50,8 @@ def stpipeline(cfg):
         "--demultiplexing-overhang", "0",
         "--min-length-qual-trimming", "18",
         "--no-clean-up", "--verbose",
-        output_file_R2,
-        output_file_R1
+        output_file_R1,
+        output_file_R2
 ]
     print(cmd)
     try: ####

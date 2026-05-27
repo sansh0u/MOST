@@ -16,12 +16,12 @@ requirements:
     - pip
 
   host:
-    - python >=3.10
+    - python >=3.10,<3.11
     - pip
     - setuptools
 
   run:
-    - python >=3.10
+    - python >=3.10,<3.11
     - biopython >=1.86
     - bbmap >=39.81
     - beautifulsoup4
@@ -31,7 +31,7 @@ requirements:
     - scipy >=1.15
     - matplotlib >=3.10
     - scikit-learn >=1.7
-    - pysam >=0.20,<0.23
+    - pysam >=0.22,<0.23
     - pyarrow >=23
     - pyyaml >=6.0.3
     - samtools >=1.23

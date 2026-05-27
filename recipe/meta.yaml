@@ -36,7 +36,6 @@ requirements:
     - pyyaml >=6.0.3
     - samtools >=1.23
     - star >=2.7
-    - stpipeline >=2.1.0
     - anndata >=0.11
     - h5py >=3.16
     - openjdk >=11

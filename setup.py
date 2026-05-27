@@ -5,7 +5,7 @@ setup(
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
-        "stpipeline"
+        "stpipeline>=2.1.0" 
     ],
     entry_points={
         "console_scripts": [

@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="toolkit",
+    name="Multi-omics Spatial Toolkit",
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
@@ -9,7 +9,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "toolkit = toolkit.CLI:app",  #修改toolkit名字
+            "most = MOST.CLI:app",  #修改toolkit名字
         ],
     },
 )

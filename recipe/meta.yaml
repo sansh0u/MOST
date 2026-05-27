@@ -1,5 +1,5 @@
 package:
-  name: spatial_tool
+  name: Multi-omics Spatial Toolkit
   version: "0.1.0"
 
 source:
@@ -31,7 +31,7 @@ requirements:
     - scipy >=1.15
     - matplotlib >=3.10
     - scikit-learn >=1.7
-    - pysam >=0.20
+    - pysam >=0.20,<0.23
     - pyarrow >=23
     - pyyaml >=6.0.3
     - samtools >=1.23
@@ -45,12 +45,12 @@ requirements:
 
 test:
   imports:
-    - spatial_tool
+    - most
 
   commands:
-    - spatial_tool --help
+    - most --help
 
 about:
-  home: https://github.com/sansh0u/spatial_tool
-  summary: "Spatial transcriptomics analysis toolkit"
+  home: https://github.com/sansh0u/MOST
+  summary: "Multi-omics Spatial Toolkit"
   license: GPL-3.0

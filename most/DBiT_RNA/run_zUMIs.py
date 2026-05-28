@@ -6,7 +6,7 @@ import yaml
 from most.yaml_load import load_yaml
 logger = logging.getLogger("toolkit")
 from pathlib import Path
-from DBiT_RNA.stpipeline import unzip
+from most.DBiT_RNA.stpipeline import unzip
 
 def zUMIs(zpath, filled_cfg):
     '''

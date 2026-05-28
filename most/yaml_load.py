@@ -8,8 +8,8 @@ import yaml
 import logging
 import os
 from pathlib import Path
-from preprocess.scan_bc import scan,scan_len
-from config_utils import Config
+from most.preprocess.scan_bc import scan,scan_len
+from most.config_utils import Config
 logger = logging.getLogger("toolkit")
 
 

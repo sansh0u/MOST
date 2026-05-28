@@ -3,7 +3,7 @@ import logging
 import os
 import typer
 import yaml
-from yaml_load import load_yaml
+from most.yaml_load import load_yaml
 logger = logging.getLogger("toolkit")
 from pathlib import Path
 from DBiT_RNA.stpipeline import unzip

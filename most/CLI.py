@@ -3,17 +3,17 @@ from numpy._core.defchararray import zfill
 import typer
 import os
 import logging
-from yaml_load import load_yaml,  config_cal,setup_logger
-from DBiT_RNA.run_zUMIs import zUMIs, filled_yaml
-from preprocess.qc import filter
-from ATAC.chromap import chromap, sort_bed
-from DBiT_RNA.stpipeline import stpipeline
-from preprocess.bc_process import dbit_bc, atac_bc 
+from most.yaml_load import load_yaml,  config_cal,setup_logger
+from most.DBiT_RNA.run_zUMIs import zUMIs, filled_yaml
+from most.preprocess.qc import filter
+from most.ATAC.chromap import chromap, sort_bed
+from most.DBiT_RNA.stpipeline import stpipeline
+from most.preprocess.bc_process import dbit_bc, atac_bc 
 from pathlib import Path
 import yaml
-from preprocess.visual import detect_tissue_pixels
-from DBiT_RNA.qc_adapt import qc_adapt
-from preprocess.scan_bc import check_adapter
+from most.preprocess.visual import detect_tissue_pixels
+from most.DBiT_RNA.qc_adapt import qc_adapt
+from most.preprocess.scan_bc import check_adapter
 
 app = typer.Typer(help = """
  pipeline toolkit

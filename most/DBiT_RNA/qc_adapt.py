@@ -1,6 +1,6 @@
 import subprocess
 import logging
-from preprocess.scan_bc import check_adapter
+from most.preprocess.scan_bc import check_adapter
 
 logger = logging.getLogger("toolkit")
 

@@ -42,7 +42,7 @@ requirements:
     - opencv
     - tqdm
     - typer
-
+    - pydantic >=2.13.2
 test:
   imports:
     - most

@@ -9,7 +9,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "most = MOST.CLI:app",  #修改toolkit名字
+            "most = most.CLI:app",  #修改toolkit名字
         ],
     },
 )

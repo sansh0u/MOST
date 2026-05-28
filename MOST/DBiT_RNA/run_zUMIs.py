@@ -25,7 +25,7 @@ def zUMIs(zpath, filled_cfg):
         logger.error(f"Error during zUMIs: {e}")
         raise
 
-def filled_yaml(cfg, cfg_path):
+def filled_yaml(cfg, cfg_path,patho):
 # -----------------------
 # 填参数
 # -----------------------
@@ -73,7 +73,9 @@ def filled_yaml(cfg, cfg_path):
     zcfg["out_dir"] = cfg.out_dir
 
     zcfg["barcodes"]["barcode_file"] =  cfg.reference.barcode_file
-
+    
+    if patho:
+        zcfg["reference"]["additional_STAR_params"]="--outFilterScoreMinOverLread 0.1 --outFilterMatchNminOverLread 0.1 --alignIntronMin 20 --alignIntronMax 1000000"
     # -----------------------
     # 输出新yaml
     # -----------------------

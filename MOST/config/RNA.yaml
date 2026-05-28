@@ -31,7 +31,7 @@ reference:
   extension_length: 0 #number of bp to extend exons by
   scaffold_length_min: 0 #minimal scaffold/chromosome length to consider (0 = all)
   additional_files: #Optional parameter. It is possible to give additional reference sequences here, eg ERCC.fa
-  additional_STAR_params: 
+  additional_STAR_params: --outFilterScoreMinOverLread 0.3 --outFilterMatchNminOverLread 0.3 --alignIntronMin 20 --alignIntronMax 1000000
 
 #output directory
 out_dir: 

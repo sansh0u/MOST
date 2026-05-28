@@ -69,7 +69,8 @@ def run(
 @app.command(no_args_is_help=True)
 def zumis(
     zpath: str = typer.Option(None, "--l", help="Path to zUMIs.sh"),
-    cfg_path: str = typer.Option(..., "--config", help="YAML config file")
+    cfg_path: str = typer.Option(..., "--config", help="YAML config file"),
+    patho: bool = typer.Option(False, "--patho", help="Modify the filtering parameters of STAR")
 ):
     """Run zUMIs pipeline"""
     print("zUMIs Pipeline started")
@@ -132,11 +133,10 @@ def zumis(
     # ========= 运行 =========
     cfg = load_yaml(cfg_path)
     os.makedirs(cfg.out_dir, exist_ok=True)
-    method = cfg.method
     cfg = config_cal(cfg)
     print(cfg)
     qc_adapt(cfg)
-    filled_cfg = filled_yaml(cfg, zcfg_path)
+    filled_cfg = filled_yaml(cfg, zcfg_path,patho)
     zUMIs(zpath,filled_cfg)
 
 @app.command(no_args_is_help = True)

@@ -16,7 +16,7 @@ setup(
     package_data={
         "most": [
             "barcode/*.txt",
-            "config/.*yaml",
+            "config/*.yaml",
         ],
     }
 )

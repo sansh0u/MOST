@@ -3,8 +3,8 @@ from setuptools import setup, find_packages
 setup(
     name="most",
     version="0.1.0",
-    packages=find_packages(where="most"),
-    package_dir= {"": "most"},
+    packages=find_packages(),
+    package_dir= {},
     package_data={"": ["*.txt","*.yaml"]},
     use_scm_version=True,
     setup_requires=['setuptools_scm'],

@@ -5,9 +5,7 @@ setup(
     version="0.1.0",
     packages=find_packages(),
     package_dir= {},
-    package_data={"": ["*.txt","*.yaml"]},
-    use_scm_version=True,
-    setup_requires=['setuptools_scm'],
+    package_data={"most.barcode": ["*.txt"],"most.config": ["*.yaml"],},
     install_requires=[
         "stpipeline>=2.1.0" 
     ],

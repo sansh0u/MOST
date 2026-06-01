@@ -14,7 +14,6 @@ setup(
             "most = most.CLI:app",  #修改toolkit名字
         ],
     },
-    include_package_data=True,
     packages=find_packages(),
     package_dir= {},
     package_data={

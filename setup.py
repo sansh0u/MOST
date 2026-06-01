@@ -12,4 +12,11 @@ setup(
             "most = most.CLI:app",  #修改toolkit名字
         ],
     },
+    include_package_data=True,
+    package_data={
+        "most": [
+            "barcode/*.txt",
+            "config/.*yaml",
+        ],
+    }
 )

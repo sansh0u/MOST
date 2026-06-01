@@ -1,0 +1,24 @@
+[build-system]
+requires = [
+    "setuptools>=68",
+    "setuptools-scm"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "most"
+dynamic = ["version"]
+
+[project.scripts]
+most = "most.CLI:app"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+most = [
+    "barcode/*.txt"
+]

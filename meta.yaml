@@ -3,7 +3,7 @@ package:
   version: {{ environ.get("VERSION", "0.0.0")}}
 
 source:
-  path: ..
+  path: .
 
 build:
   script: "{{ PYTHON }} -m pip install . -vv"

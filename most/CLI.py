@@ -12,6 +12,7 @@ import yaml
 from most.preprocess.visual import detect_tissue_pixels
 from most.DBiT_RNA.qc_adapt import qc_adapt
 from most.preprocess.scan_bc import check_adapter
+from importlib.resources import files
 
 app = typer.Typer(help = """
  pipeline toolkit
@@ -73,9 +74,9 @@ def zumis(
     """Run zUMIs pipeline"""
     print("zUMIs Pipeline started")
     
-    BASE_DIR = Path(__file__).resolve().parent
-    cfg_file = BASE_DIR / "config" / ".config.yaml"
-    zcfg_path = BASE_DIR / "config"  / "RNA.yaml"
+    BASE_DIR = files("most.config")
+    cfg_file = BASE_DIR /  ".config.yaml"
+    zcfg_path = BASE_DIR  / "RNA.yaml"
     
     # ========= zUMIs 路径处理 =========
     if zpath:

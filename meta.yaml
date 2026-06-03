@@ -1,6 +1,8 @@
+{% set version = git_describe_tag() %}
+
 package:
   name: most
-  version: "0.1.1"
+  version: "{{ version }}"
 
 source:
   path: ..

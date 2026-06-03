@@ -4,10 +4,7 @@ setup(
     name="most",
     version="0.1.0",
     packages=find_packages(),
-    package_data={  "most": [
-            "barcode/*.txt",
-            "config/*.yaml",
-        ]},
+    include_package_data=True,
     install_requires=[
         "stpipeline>=2.1.0" 
     ],

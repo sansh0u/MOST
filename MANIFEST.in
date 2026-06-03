@@ -1,0 +1,2 @@
+include most/barcode/*.txt
+include most/config/*.yaml

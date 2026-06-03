@@ -1,5 +1,3 @@
-
-from numpy._core.defchararray import zfill
 import typer
 import os
 import logging

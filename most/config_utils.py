@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
+from importlib.resources import files
 
 DEFAULTS = {
 
@@ -18,7 +19,7 @@ DEFAULTS = {
     "linker2":
         "ATCCACGTGCTTGAGAGGCCAGAGCATTCG",
     
-    "barcode_file": str(Path(__file__).resolve().parent / "barcode" / "20240614_2500barcode_AB_update.txt"),
+    "barcode_file": str(files("most.barcode") / "20240614_2500barcode_AB_update.txt"),
 
     "hdist": 3,
 

@@ -52,13 +52,13 @@ The ``` run ``` module is the native workflow implemented in MOST for processing
 
 Depending on the value of the ```method``` parameter in the configuration file, the workflow automatically selects the appropriate processing pipeline:
 
-| Method | Supported Technologies | Backend  
-|----------------|----------|----------------|
+| Method | Supported Technologies | Backend  |
+|:----------|:--------:|:-------|
 | RNA | DBiT-seq, Patho-DBiT | ST-Pipeline | 
 | ATAC| Spatial ATAC, Spatial CUT&Tag, Patho-ATAC, Patho-CUT&Tag  | Chromap | 
 
 | Method | Technology | Backend |
-|----------|----------|----------|
+|:----------|:--------:|:-------|
 | RNA | DBiT-seq | ST-Pipeline |
 | RNA | Patho-DBiT | ST-Pipeline |
 | ATAC | Spatial ATAC | Chromap |
@@ -121,8 +121,8 @@ The MOST workflow is configured through a unified YAML file that is shared acros
 ### General Parameters
 
 | Parameter Name | Required | Default | Description                                     |
-| -------------- | -------- | ------- | ----------------------------------------------- |
-| `project`      | Yes      | `Project       | Project name used for output files and logs.    |
+|:----------|:--------:|:-------:|:------------|
+| `project`      | Yes      | Project       | Project name used for output files and logs.    |
 | `method`       | Yes      | -   | Analysis mode. Supported values: `RNA`, `ATAC`. |
 | `out_dir`      | Yes      | -       | Output directory for all generated results.     |
 | `threads`      | No       | `16`     | Number of CPU threads used during analysis.     |
@@ -130,14 +130,14 @@ The MOST workflow is configured through a unified YAML file that is shared acros
 ### Input Files
 
 | Parameter Name        | Required | Default | Description                                                                  |
-| --------------------- | -------- | ------- | ---------------------------------------------------------------------------- |
+|:----------|:--------:|:-------:|:------------|
 | `sequence_file.file1` | Yes      | -       | Read 1 FASTQ file, typically containing biological sequences for alignment.             |
 | `sequence_file.file2` | Yes      | -       | Read 2 FASTQ file, typically containing barcode and UMI sequences. |
 
 ### Reference Files
 
 | Parameter Name           | Required | Default       | Description                                                                                              |
-| ------------------------ | -------- | ------------- | -------------------------------------------------------------------------------------------------------- |
+|:----------|:--------:|:-------:|:------------|
 | `reference.index_file`   | Yes      | -             | Genome index used by Chromap alignment steps.                                                              |
 | `reference.fa_file`      | Yes      | -             | Reference genome FASTA file.                                                                             |
 | `reference.gtf_file`     | Yes      | -             | Gene annotation GTF file.                                                                                |
@@ -148,14 +148,14 @@ The MOST workflow is configured through a unified YAML file that is shared acros
 
 These parameters are optional and should only be modified when processing custom library designs.
 
-| Parameter Name              | Required | Default          | Description                                                                        |
-| --------------------------- | -------- | ---------------- | ---------------------------------------------------------------------------------- |
+| Parameter Name  | Required | Default | Description |
+|:----------|:--------:|:-------:|:------------|
 | `advanced.primer`           | No       | `CAAGCGTTGGCTTCTCGCATCT` | Primer sequence used for library construction.                                     |
 | `advanced.linker1`          | No       | `GTGGCCGATGTTTCGCATCGGCGTACGACT` | Linker 1 sequence.                                                                 |
 | `advanced.linker2`          | No       | `ATCCACGTGCTTGAGAGGCCAGAGCATTCG` | Linker 2 sequence.                                                                 |
-| `advanced.UMI`              | No       | Auto-detected  | Position of the UMI sequence in Read 1. Coordinates are 1-based and inclusive.     |
+| `advanced.UMI` | No       | Auto-detected  | Position of the UMI sequence in Read 1. Coordinates are 1-based and inclusive.     |
 | `advanced.BC`               | No       | Auto-detected  | Position of spatial barcodes in Read 1. Multiple barcode regions can be specified. |
-| `advanced.hdist`            | No       | `3`              | Maximum Hamming distance allowed when matching barcodes.                           |
+| `advanced.hdist` | No       | `3`              | Maximum Hamming distance allowed when matching barcodes.                           |
 | `advanced.adapter`          | No       | `AAGCAGTGGTATCAACGCAGAGTGAATGGG`    | Adapter sequence to trim from reads.                                               |
 | `advanced.adapter_mismatch` | No       | `1`              | Maximum number of mismatches allowed during adapter detection.                     |
 

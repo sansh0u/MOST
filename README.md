@@ -13,7 +13,7 @@ Key features:
 - Visualization utilities for spatial data
 - Built-in default parameters to reduce manual configuration
 
----
+
 ## 2. Getting start
 
 ### 2.1 Installation
@@ -42,7 +42,7 @@ ASTRO and zUMIs can be obtained either by cloning their GitHub repositories or b
 ```bush
 ```
 
----
+
 
 ## 3. Modules Description
 
@@ -158,7 +158,7 @@ These parameters are optional and should only be modified when processing custom
 | `advanced.hdist`            | No       | `3`              | Maximum Hamming distance allowed when matching barcodes.                           |
 | `advanced.adapter`          | No       | `AAGCAGTGGTATCAACGCAGAGTGAATGGG`    | Adapter sequence to trim from reads.                                               |
 | `advanced.adapter_mismatch` | No       | `1`              | Maximum number of mismatches allowed during adapter detection.                     |
----
+
 
 ### Notes
 

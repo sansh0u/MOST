@@ -9,6 +9,7 @@ sequence_file:
 reference:
   index_file: /home/sanshou/project/toolkit/toolkit/index/GRCm38.primary_assembly.genome.index
   fa_file: /home/sanshou/project/toolkit/toolkit/index/human/GRCh38.primary_assembly.genome.fa
+  genome: hg38
   gtf_file: /home/sanshou/project/toolkit/toolkit/index/human/gencode.v48.primary_assembly.annotation.gtf
   star_index: /home/sanshou/project/toolkit/star_index1
   barcode_file:

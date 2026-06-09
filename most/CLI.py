@@ -9,7 +9,8 @@ from most.DBiT_RNA.stpipeline import stpipeline
 from most.preprocess.bc_process import dbit_bc, atac_bc 
 from pathlib import Path
 import yaml
-from most.preprocess.visual import detect_tissue_pixels
+from most.visual.visuial import plot_fragment_distribution
+from most.preprocess.position import detect_tissue_pixels
 from most.DBiT_RNA.qc_adapt import qc_adapt
 from most.preprocess.scan_bc import check_adapter
 from importlib.resources import files
@@ -49,14 +50,13 @@ def run(
     method = cfg.method
     cfg = config_cal(cfg)
     
-
     if method == "ATAC":
         #print(cfg)
         filter(cfg,method)
         atac_bc(cfg)
         chromap(cfg)
         sort_bed(cfg)
-
+        plot_fragment_distribution(cfg)
     elif method == "RNA":
         #print(cfg)
         qc_adapt(cfg)

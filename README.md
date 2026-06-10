@@ -25,7 +25,7 @@ Key features:
 ## 2. Getting start
 
 ### 2.1 Installation
-MOST is also available on bioconda. Thus you can easily install MOST with Conda.
+MOST is available on conda-forge. Thus you can easily install MOST with Conda.
 ```bash
 conda install -c conda-forge most
 ```

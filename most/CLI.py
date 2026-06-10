@@ -10,7 +10,7 @@ from most.preprocess.bc_process import dbit_bc, atac_bc
 from pathlib import Path
 import yaml
 from most.visual.visuial import plot_fragment_distribution
-from most.preprocess.position import detect_tissue_pixels
+from most.visual.position import detect_tissue_pixels
 from most.DBiT_RNA.qc_adapt import qc_adapt
 from most.preprocess.scan_bc import check_adapter
 from importlib.resources import files

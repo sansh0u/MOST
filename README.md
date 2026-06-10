@@ -1,4 +1,11 @@
 # MOST: Multi-Omics Spatial Tool
+## Table of Contents
+- [1. Functional Overview](#1-functional-overview)
+- [2. Getting Started](#2-getting-started)
+- [3. Modules Description](#3-modules-description)
+- [4. Parameter Description](#4-parameter-description)
+
+
 
 ## 1. Functional Overview
 
@@ -13,6 +20,7 @@ Key features:
 - Visualization utilities for spatial data
 - Built-in default parameters to reduce manual configuration
 
+![Workflow Diagram](/workflow.png)
 
 ## 2. Getting start
 
@@ -29,21 +37,82 @@ most --help
 
 ### 2.2 Install zUMIs and Astro
 
-ASTRO and zUMIs can be obtained either by cloning their GitHub repositories or by downloading the packaged versions from the links provided below.
+Installation of zUMIs and ASTRO is not required for MOST. However, MOST includes integrated interfaces to these tools, enabling users to perform RNA expression quantification with zUMIs and Patho-DBiT analysis with ASTRO directly from MOST. 
+
+ASTRO and zUMIs can be obtained either by cloning their GitHub repositories or by downloading the packaged versions from the links provided below. 
 
 ### ASTRO
 - GitHub: https://github.com/gersteinlab/ASTRO#
 - Direct download: https://
-```bush
+```bash
+#clone the repository
+git clone git@github.com:gersteinlab/ASTRO.git 
+#enter the directory named "python"
+cd python
+#install dependencies and build/install
+pip install .
+#check if the installation was successful
+ASTRO --help
 ```
+
+
 ### zUMIs
 - GitHub: https://github.com/sdparekh/zUMIs
 - Direct download: https://
-```bush
+```bash
+#clone the repository
+git clone https://github.com/sdparekh/zUMIs.git
 ```
 
+### 2.3 Download Reference Files
+MOST requires appropriate reference files for RNA and ATAC data processing. Users can download the reference files provided by the MOST project or prepare their own custom reference files.
 
+Human (GRCh38 / hg38)
 
+```bash
+mkdir reference/hg38
+cd reference/hg38
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_48/GRCh38.primary_assembly.genome.fa.gz
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_48/gencode.v48.primary_assembly.annotation.gtf.gz
+```
+Mouse (GRCm38 / mm10)
+```bash
+mkdir reference/mm10
+cd reference/mm10
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/GRCm38.primary_assembly.genome.fa.gz
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/gencode.vM23.primary_assembly.annotation.gtf.gz
+```
+### 2.4 Create Reference Index
+
+2.4.1 Chromap Index
+
+Chromap requires a genome index before alignment. The index only needs to be generated once for each reference genome.
+```bash
+# Example for human hg38
+cd reference/hg38
+#decompress the reference genome while keeping the original .gz file
+gunzip -c GRCm38.primary_assembly.genome.fa.gz > GRCm38.primary_assembly.genome.fa
+#build Chromap index
+chromap -i -r GRCm38.primary_assembly.genome.fa -o chromap_index
+```
+2.4.2 STAR Index
+
+STAR requires a separate genome index for RNA-seq alignment.
+```bash
+# Example for mouse mm10
+cd reference/mouse
+gunzip -c GRCm38.primary_assembly.genome.fa.gz > GRCm38.primary_assembly.genome.fa
+
+gunzip -c gencode.vM23.annotation.gtf.gz > gencode.vM23.annotation.gtf
+
+STAR --runMode genomeGenerate \
+    # STAR genome index directory
+    --genomeDir star_index \
+    --genomeFastaFiles GRCm38.primary_assembly.genome.fa \
+    --sjdbGTFfile gencode.vM23.annotation.gtf \
+    --sjdbOverhang 99 \
+    --runThreadN 16
+```
 ## 3. Modules Description
 
 ### 3.1 `run` (Native Pipeline)
@@ -52,10 +121,6 @@ The ``` run ``` module is the native workflow implemented in MOST for processing
 
 Depending on the value of the ```method``` parameter in the configuration file, the workflow automatically selects the appropriate processing pipeline:
 
-| Method | Supported Technologies | Backend  |
-|:----------|:--------:|:-------|
-| RNA | DBiT-seq, Patho-DBiT | ST-Pipeline | 
-| ATAC| Spatial ATAC, Spatial CUT&Tag, Patho-ATAC, Patho-CUT&Tag  | Chromap | 
 
 | Method | Technology | Backend |
 |:----------|:--------:|:-------|
@@ -63,8 +128,8 @@ Depending on the value of the ```method``` parameter in the configuration file, 
 | RNA | Patho-DBiT | ST-Pipeline |
 | ATAC | Spatial ATAC | Chromap |
 | ATAC | Spatial CUT&Tag | Chromap |
-| ATAC | Patho-ATAC | Chromap |
-| ATAC | Patho-CUT&Tag | Chromap |
+| ATAC | epi-Patho-ATAC | Chromap |
+| ATAC | epi-Patho-CUT&Tag | Chromap |
 
 Example:
 
@@ -139,8 +204,9 @@ The MOST workflow is configured through a unified YAML file that is shared acros
 | Parameter Name           | Required | Default       | Description                                                                                              |
 |:----------|:--------:|:-------:|:------------|
 | `reference.index_file`   | Yes      | -             | Genome index used by Chromap alignment steps.                                                              |
-| `reference.fa_file`      | Yes      | -             | Reference genome FASTA file.                                                                             |
-| `reference.gtf_file`     | Yes      | -             | Gene annotation GTF file.                                                                                |
+| `reference.fa_file`      | Yes      | -             | Reference genome FASTA file (e.g., genome.fa.gz).                                                                             |
+| `reference.genome`      | Yes      | -             | Reference genome assembly name used for QC plot generation (e.g., hg38).                                                                |
+| `reference.gtf_file`     | Yes      | -             | Gene annotation GTF file (e.g., genome.gtf.gz).                                                                                |
 | `reference.star_index`   | Yes      | -             | STAR genome index directory.                                                                             |
 | `reference.barcode_file` | No       | [Default barcode whitelist](most/barcode/20240614_2500barcode_AB_update.txt) | Spatial barcode whitelist file. If not specified, MOST uses the bundled barcode whitelist distributed with the package (most/barcode/). |
 

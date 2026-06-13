@@ -46,6 +46,7 @@ requirements:
     - pydantic >=2.13.2
     - plotly ==5.24.1
     - kaleido ==0.2.1
+    - biscuit
 test:
   imports:
     - most

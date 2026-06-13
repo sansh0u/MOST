@@ -1,6 +1,7 @@
 import os
-import snapatac2 as snap
+
 def plot_fragment_distribution(cfg):
+    import snapatac2 as snap
     output_dir = cfg.out_dir
     adata = snap.pp.import_fragments(
     fragment_file=f"{cfg.out_dir}/{cfg.project}.bed.gz",

@@ -25,9 +25,9 @@ Commands:
 
 Examples:
 
-  toolkit run --config config.yaml
+  most run --config config.yaml
 
-  toolkit zumis -dbit -in1 R1.fq -in2 R2.fq -out outdir
+  most zumis -dbit -in1 R1.fq -in2 R2.fq -out outdir
 """
 , no_args_is_help = True)
 

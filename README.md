@@ -79,8 +79,8 @@ Mouse (GRCm38 / mm10)
 ```bash
 mkdir reference/mm10
 cd reference/mm10
-wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/GRCm38.primary_assembly.genome.fa.gz
-wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M23/gencode.vM23.primary_assembly.annotation.gtf.gz
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/GRCm38.primary_assembly.genome.fa.gz
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M25/gencode.vM25.primary_assembly.annotation.gtf.gz
 ```
 ### 2.4 Create Reference Index
 
@@ -109,7 +109,7 @@ STAR --runMode genomeGenerate \
     # STAR genome index directory
     --genomeDir star_index \
     --genomeFastaFiles GRCm38.primary_assembly.genome.fa \
-    --sjdbGTFfile gencode.vM23.annotation.gtf \
+    --sjdbGTFfile gencode.vM25.annotation.gtf \
     --sjdbOverhang 99 \
     --runThreadN 16
 ```

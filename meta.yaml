@@ -1,6 +1,10 @@
+{% set version = load_file_regex(
+    "../most/_version.py",
+    "__version__ = \"([^\"]+)\""
+).group(1) %}
 package:
   name: most
-  version: {{ environ.get("VERSION", "0.0.0")}}
+  version: {{ version }}
 
 source:
   path: .

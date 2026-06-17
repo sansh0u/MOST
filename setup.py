@@ -2,7 +2,8 @@ from setuptools import setup, find_packages
 from most.version import __version__
 setup(
     name="most", 
-    version=__version__,
+    use_scm_version=True,
+    setup_requires=["setuptools_scm"],
     packages=find_packages(),
     include_package_data=True,
     package_data={"most": ["barcode/*.txt","config/*.yaml",]},

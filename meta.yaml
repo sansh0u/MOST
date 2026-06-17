@@ -1,5 +1,5 @@
 {% set version = load_file_regex(
-    "../most/_version.py",
+    "most/_version.py",
     "__version__ = \"([^\"]+)\""
 ).group(1) %}
 package:

@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-from most.version import __version__
 setup(
     name="most", 
     use_scm_version=True,

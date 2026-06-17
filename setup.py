@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from most._version import __version__
+from most.version import __version__
 setup(
     name="most", 
     version=__version__,

@@ -6,7 +6,7 @@ lambda
                 CTATCTCTTATA
                 AGATGCGAGAAGCCAACGCTTG
             R2 trim_end2 trimming 保留其后面的序列，没找到全部保留
-                AGATGTGTATAAGAGATAG
+                
 用bbduk过滤 linker1
 linker2
 trim_end2

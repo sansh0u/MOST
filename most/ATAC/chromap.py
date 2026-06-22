@@ -11,7 +11,7 @@ def chromap(cfg):
     output_file_R2 = f"{cfg.out_dir}/linker2_R1.fastq.gz"
     subprocess.run(["rm", f"{cfg.out_dir}/linker2_R2.fastq.gz"], check=True)
     b_file = f"{cfg.out_dir}/output_R2.fastq.gz"
-    index_file = cfg.reference.index_file
+    index_file = cfg.reference.chromap_index
     fa_file = cfg.reference.fa_file
     output_file = f"{cfg.out_dir}/{cfg.project}.bed"
     bc_file = cfg.reference.barcode_file

@@ -18,7 +18,7 @@ def atac_bc(cfg):
     output_file_R2 = cfg.out_dir + "/output_R2.fastq"
 
     
-    seq_start = cfg.runtime.seqstart
+    seq_start = cfg.runtime.seq_start
     bc2_start = cfg.runtime.bc2_start   
     bc2_end = cfg.runtime.bc2_end
     bc1_start = cfg.runtime.bc1_start

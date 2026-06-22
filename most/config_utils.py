@@ -66,7 +66,7 @@ class Reference(BaseModel):
         "extra": "forbid"
     }
 
-    index_file: Optional[str] = None
+    chromap_index: Optional[str] = None
 
     fa_file: str
 

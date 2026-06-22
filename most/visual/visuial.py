@@ -7,7 +7,7 @@ def plot_fragment_distribution(cfg):
     fragment_file=f"{cfg.out_dir}/{cfg.project}.bed.gz",
     chrom_sizes=getattr(
         snap.genome,
-        cfg.reference.genome
+        cfg.reference.fa_file
     ),
     sorted_by_barcode=False,
 )

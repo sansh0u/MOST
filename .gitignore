@@ -1,3 +1,5 @@
 most/__pycache__/*
 /.gitignore
 /dist/*
+/meta copy.yaml
+/setup copy.py

@@ -9,7 +9,6 @@ build:
   noarch: python
   script: |
     {{ PYTHON }} -m pip install . --no-deps -vv
-    {{ PYTHON }} -m pip install plotly==5.24.1 kaleido==0.2.1 stpipeline>=2.1.0
 
 requirements:
   build:

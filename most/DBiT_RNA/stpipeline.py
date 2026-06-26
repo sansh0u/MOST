@@ -49,7 +49,7 @@ def stpipeline(cfg):
         "--umi-end-position", "26",
         "--demultiplexing-overhang", "0",
         "--min-length-qual-trimming", "18",
-         "--verbose",
+        "--verbose",
         output_file_R1,
         output_file_R2
 ]

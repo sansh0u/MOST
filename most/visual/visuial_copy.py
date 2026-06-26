@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
 import scanpy as sc
+from scipy.stats import gaussian_kde
 
 adata = snap.pp.import_fragments(
     fragment_file="/data/Fanyt/ATAC_0209_output/ATAC_sorted.bed.gz",

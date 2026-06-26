@@ -8,7 +8,7 @@ import scanpy as sc
 
 adata = snap.pp.import_fragments(
     fragment_file="/data/Fanyt/ATAC_0209_output/ATAC_sorted.bed.gz",
-    chrom_sizes=snap.genome.hg38,
+    chrom_sizes=snap.genome.mm10,
     sorted_by_barcode=False,
 )
 fig = snap.pl.frag_size_distr(adata, show=False)
@@ -80,66 +80,44 @@ fig.update_xaxes(
 fig.show()
 fig.write_image('fragment_dis.png', scale=6)
 
-snap.metrics.tsse(adata, snap.genome.hg38)
+snap.metrics.tsse(adata, snap.genome.mm10)
 
+# =========================
+# 4. 🔥 TSSe density scatter（论文级替换）
+# =========================
 
-fig = snap.pl.tsse(adata, interactive=False, show=False)
-fig.update_layout(
-    width=600,
-    height=500
+x = np.log10(adata.obs["n_fragment"] + 1)
+y = adata.obs["tsse"]
+
+# density
+xy = np.vstack([x, y])
+z = gaussian_kde(xy)(xy)
+
+# sort for clean plot
+idx = z.argsort()
+x, y, z = x[idx], y[idx], z[idx]
+
+plt.figure(figsize=(5,4))
+
+scat = plt.scatter(
+    x, y,
+    c=z,
+    s=6,
+    cmap="turbo",
+    edgecolor="none"
 )
-fig.update_layout(
-    plot_bgcolor='white',  # Remove background color (transparent)
-    paper_bgcolor='white',  # Remove the background of the entire figure (transparent)
-    xaxis=dict(
-        showline=True,  # Show frame on x-axis
-        showgrid=False,
-        linewidth=0.8,  # Thickness of the frame line
-        linecolor='black',  # Color of the frame line
-        ticks='outside',  # Place ticks outside the axis line
-        tickwidth=1,  # Thickness of the ticks
-        tickcolor='black',  # Color of the ticks
-        ticklen=4,  # Length of the ticks
-        tickmode='auto',  # Can be 'auto' or 'array'
-        # Optional: Define specific tick positions
-        # tickvals=[0, 1, 2, 3, 4],
-        # Optional: Define custom tick labels
-        # ticktext=['A', 'B', 'C', 'D', 'E'],
-        mirror=True,
-        title_font=dict(
-            family="Arial",  # Font family
-            size=12,  # Font size
-            color="black"  # Font color
-        ),tickfont=dict(
-            family="Arial",  # Font family
-            size=10,  # Font size
-            color="black"  # Font color
-        )
-    ),
-    yaxis=dict(
-        showline=True,  # Show frame on y-axis
-        showgrid=False,
-        linewidth=0.8,  # Thickness of the frame line
-        linecolor='black',  # Color of the frame line
-        ticks='outside',  # Place ticks outside the axis line
-        tickwidth=1,  # Thickness of the ticks
-        tickcolor='black',  # Color of the ticks
-        ticklen=4,  # Length of the ticks
-        tickmode='auto',  # Can be 'auto' or 'array'
-        mirror=True,title_font=dict(
-            family="Arial",  # Font family
-            size=12,  # Font size
-            color="black"  # Font color
-        ),tickfont=dict(
-            family="Arial",  # Font family
-            size=10,  # Font size
-            color="black"  # Font color
-        )
-    ),
-)
-fig.show()
-fig.write_image('tsse.png', scale=4)
 
+plt.colorbar(scat, label="Density")
+
+plt.xlabel("log10-transformed unique fragments")
+plt.ylabel("TSS enrichment score")
+
+plt.tight_layout()
+plt.savefig("tsse_density.png", dpi=300, bbox_inches="tight")
+plt.show()
+
+
+"""
 snap.pp.add_tile_matrix(adata)
 
 snap.pp.select_features(adata, n_features=500000, inplace = True)
@@ -186,3 +164,4 @@ for i in range(10):
     sc.pl.spatial(data2, color=["leiden"],img_key=None, spot_size=0.92, title='Cluster #'+str(i),
              palette=palette_cmap, legend_loc=None)
     palette_cmap=['gainsboro']*10
+"""

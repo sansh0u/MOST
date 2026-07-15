@@ -34,7 +34,6 @@ requirements:
     - chromap >=0.3.2
     - samtools >=1.23
     - star >=2.7
-    - stpipeline >=2.1.0
     - pigz >=2.8
 
     # scientific stack

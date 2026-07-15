@@ -19,8 +19,8 @@ Examples:
 """
 , no_args_is_help = True)
 
-@app.command("config", no_args_is_help = True)
-def run(config_file):
+@app.command(no_args_is_help = True)
+def run(config_file: str = typer.Option(..., "--config", "-c")):
     cfg = load_yaml(config_file)
     method = cfg.method
     path,zpath = config_cal(cfg)

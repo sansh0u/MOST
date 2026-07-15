@@ -8,7 +8,7 @@ version = "0.2.2"
 description = "Multi-omics Spatial Toolkit"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "GPL-3.0" }
+license = { file = "LICENSE" }
 
 dependencies = []
 

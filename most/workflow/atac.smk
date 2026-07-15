@@ -83,7 +83,7 @@ rule atac_bc:
         bc1_start=config['runtime']['bc1_start']
         bc1_end=config['runtime']['bc1_end']
     run:
-        from most.python.preprocess.bc_process import atac_bc
+        from most.preprocess.bc_process import atac_bc
         atac_bc(
             input.r1,
             input.r2,

@@ -1,5 +1,5 @@
 import subprocess
-from most.python.preprocess.scan_bc import check_adapter
+from most.preprocess.scan_bc import check_adapter
 
 
 def qc_adapt(fastq_intput_1,fastq_intput_2,CleanFq1,CleanFq2,threads,Adapter,mismatch):

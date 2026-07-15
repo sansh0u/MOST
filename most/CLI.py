@@ -1,9 +1,7 @@
 import typer
 import os
-import yaml
 import subprocess
-from most.python.preprocess.scan_bc import scan
-from most.python.yaml_load import load_yaml,  config_cal
+from most.yaml_load import load_yaml, config_cal
 
 app = typer.Typer(help = """
  pipeline toolkit

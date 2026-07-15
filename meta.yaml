@@ -1,6 +1,6 @@
 package:
   name: most
-  version: 0.1.8
+  version: 0.2.2
 
 source:
   path: .
@@ -12,48 +12,41 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }}
-    - {{ compiler('cxx') }}
     - python
     - pip
-    - setuptools
 
   host:
-    - python
+    - python >=3.11
     - pip
-    - setuptools
+    - setuptools >=68
+    - wheel
 
   run:
-    - python
+    - python >=3.11
     
     # bio tools
     - snakemake >=9.23.1
     - biopython >=1.87
     - bbmap >=39.81
-    - cutadapt
+    - cutadapt >=5.2
     - chromap >=0.3.2
     - samtools >=1.23
     - star >=2.7
-    - openjdk >=11
-    - pysam >=0.22,<0.23
-    - biscuit
+    - stpipeline >=2.1.0
+    - pigz >=2.8
 
     # scientific stack
     - numpy >=2.2
     - pandas >=2.3
     - scipy >=1.15
     - matplotlib >=3.10
-    - pyarrow >=23
-    - h5py >=3.16
-    - anndata >=0.11
+    - ploty >=5.24.1
+    - kaleido >=0.2.1
 
     # utils
     - pyyaml >=6.0.3
-    - tqdm
-    - typer
+    - typer 
     - pydantic >=2.13.2
-    - beautifulsoup4
-    - opencv
 
 test:
   imports:

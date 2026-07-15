@@ -2,6 +2,7 @@ rule all:
     input:
         f"{config['out_dir']}/st_pipeline_output"
 
+
 rule qc:
     input:
         r1=config["sequence_file"]["file1"],
@@ -15,7 +16,7 @@ rule qc:
     threads:
         config["threads"]
     run:
-        from most.python.preprocess.qc_adapt import qc_adapt
+        from most.preprocess.qc_adapt import qc_adapt
         qc_adapt(
             input.r1,
             input.r2,
@@ -106,7 +107,7 @@ rule dbit_qc:
         bc1_start=config["runtime"]["bc1_start"],
         bc1_end=config["runtime"]["bc1_end"]
     run:
-        from most.python.preprocess.bc_process import dbit_bc
+        from most.preprocess.bc_process import dbit_bc
         dbit_bc(
             input.r1,
             output.r1,

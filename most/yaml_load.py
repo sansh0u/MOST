@@ -2,8 +2,8 @@ import yaml
 import os
 import subprocess
 from pathlib import Path
-from most.python.preprocess.scan_bc import scan,scan_len
-from most.python.model import Config
+from most.preprocess.scan_bc import scan,scan_len
+from most.model import Config
 from importlib.resources import files,as_file
 
 def unzip(file_path,thread):

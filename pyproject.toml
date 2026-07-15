@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "most"
+version = "0.2.2"
+description = "Multi-omics Spatial Toolkit"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "GPL-3.0" }
+
+dependencies = []
+
+[project.scripts]
+most = "most.CLI:app"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["most*"]
+
+[tool.setuptools.package-data]
+most = [
+    "barcode/*.txt",
+    "config/*.yaml",
+    "workflow/*.smk",
+]

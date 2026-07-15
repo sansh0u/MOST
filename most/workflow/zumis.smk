@@ -16,7 +16,7 @@ rule qc:
     threads:
         config["threads"]
     run:
-        from most.python.rna.qc_adapt import qc_adapt
+        from most.rna.qc_adapt import qc_adapt
         qc_adapt(
             input.r1,
             input.r2,

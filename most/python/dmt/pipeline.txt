@@ -1,0 +1,30 @@
+生成biscuit索引
+lambda
+    识别barcode85 TTATTTTT，命中加入Lambda reads
+        过滤adapter
+            r1 adapter及其后面全部删除
+                CTATCTCTTATA
+                AGATGCGAGAAGCCAACGCTTG
+            R2 trim_end2 trimming AGATGTGTATAAGAGATAG 保留其后面的序列，没找到全部保留
+                
+用bbduk过滤 linker1
+linker2
+trim_end2
+✓ linker1
+✓ linker2
+✓ trim_end2
+
+
+1.识别barcode位置
+2.用自制脚本查询barcode85‘TTATTTTT’,记录
+3.cutadapt过滤read1的两个接头，adapter及其后面全部删除
+CTATCTCTTATA
+    AGATGCGAGAAGCCAACGCTTG
+4.cutadapt过滤read2的接头
+5.将有bc85的提取到另一个文件
+6.bbduk过滤read2不完整的linker1,2
+7.有自制py提取barcode1,barcode2
+
+
+
+

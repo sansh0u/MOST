@@ -1,0 +1,765 @@
+import os
+import glob
+
+# Resolve the genome-specific ref dict from site.yaml using the 'ref' config key
+target_ref = config.get("ref", "")
+if target_ref in config:
+    ref = config[target_ref]
+elif target_ref:
+    raise ValueError(f"Genome reference '{target_ref}' not found in genomes.yaml.")
+else:
+    ref = {}
+
+GENOME = config.get("ref", "unknown")
+
+# Normalize genome to the top-level subdirectory used in REF_DIR
+if GENOME.startswith("hg38"):
+    GENOME_FOR_PATH = "hg38"
+elif GENOME.startswith("mm10"):
+    GENOME_FOR_PATH = "mm10"
+else:
+    raise ValueError(f"Unsupported genome: {GENOME}. Must be hg38 or mm10 based.")
+
+# Discover samples: explicit IDS list or auto-detect from fastq/*/DNA_1.fq* on disk
+if "IDS" in config:
+    SAMPLES = config["IDS"].split(",")
+else:
+    DNA_FILES = glob.glob(os.path.join("fastq", "*/DNA_1.fq*"))
+    SAMPLES = sorted(list(set([os.path.dirname(f).split(os.sep)[-1] for f in DNA_FILES])))
+
+RNA_SAMPLES = [s for s in SAMPLES if any(
+    os.path.exists(os.path.join("fastq", s, f"RNA_1{ext}"))
+    for ext in [".fq.gz", ".fq", ".fastq.gz", ".fastq"]
+)]
+print(f"Detected samples: {SAMPLES} in fastq/ ({len(RNA_SAMPLES)} with RNA)")
+
+def require_config(key):
+    if key not in config:
+        raise ValueError(
+            f"Required config key '{key}' is missing. "
+            f"Set it in your profile config.yaml or via --config {key}=..."
+        )
+    return config[key]
+
+REF_DIR      = require_config("REF_DIR")
+PYTHON       = require_config("PYTHON")
+BARCODES_DIR = os.path.join(workflow.basedir, "..", "barcodes")
+
+# Resolve input fastq path, supporting .fq/.fastq with or without .gz
+def get_fastq(wildcards, prefix):
+    sample_dir = os.path.join("fastq", wildcards.sample)
+    for ext in [".fq.gz", ".fq", ".fastq.gz", ".fastq"]:
+        path = os.path.join(sample_dir, prefix + ext)
+        if os.path.exists(path):
+            return path
+    return os.path.join(sample_dir, prefix + ".fq")
+
+# Main entry point: run preprocessing, QC, and collect deliverables in final_output/
+rule final_output:
+    input:
+        expand("pipeline_output/{sample}/pileup/{sample}.cg", sample=SAMPLES),
+        expand("pipeline_output/{sample}/pileup/{sample}_Lambda.cg", sample=SAMPLES),
+        expand("pipeline_output/{sample}/rna_STAR/Aligned.out.sam", sample=RNA_SAMPLES),
+        expand("pipeline_output/{sample}/qc/html/qc_report.html", sample=SAMPLES),
+        expand("final_output/{sample}/{sample}.cg", sample=SAMPLES),
+        expand("final_output/{sample}/{sample}.cg.idx", sample=SAMPLES),
+        expand("final_output/{sample}/{sample}_Lambda.cg", sample=SAMPLES),
+        expand("final_output/{sample}/qc_report.html", sample=SAMPLES),
+        expand("final_output/{sample}/multiqc_report.html", sample=SAMPLES),
+        expand("final_output/{sample}/multiqc_report_data", sample=SAMPLES),
+        expand("final_output/{sample}/Solo.out", sample=RNA_SAMPLES),
+
+################################################################################
+# DNA Pipeline Rules
+################################################################################
+
+rule dna_trim_and_demux:
+    input:
+        r1 = lambda wildcards: get_fastq(wildcards, "DNA_1"),
+        r2 = lambda wildcards: get_fastq(wildcards, "DNA_2"),
+        wl = os.path.join(BARCODES_DIR, "spatial_barcodes.txt"),
+    output:
+        r1_out    = "pipeline_output/{sample}/trim/{sample}_R1.fq.gz",
+        r2_out    = "pipeline_output/{sample}/trim/{sample}_R2.fq.gz",
+        lambda_r1 = "pipeline_output/{sample}/trim/{sample}_Lambda_R1.fq.gz",
+        lambda_r2 = "pipeline_output/{sample}/trim/{sample}_Lambda_R2.fq.gz",
+        unmatched_r1 = "pipeline_output/{sample}/dmux/UNMATCHED_R1.fq.gz",
+        unmatched_r2 = "pipeline_output/{sample}/dmux/UNMATCHED_R2.fq.gz",
+        dmux_done = "pipeline_output/{sample}/dmux/_merged_done.flag",
+        stats     = "pipeline_output/{sample}/trim/{sample}_trim_stats.txt",
+    resources:
+        mem = "140G",
+        time = "120:00:00",
+        cpus_per_task = 24,
+    shell:
+        """
+        ulimit -n 65535
+        set -xeo pipefail
+        mkdir -p pipeline_output/{wildcards.sample}/trim/ \
+                 pipeline_output/{wildcards.sample}/dmux/ \
+                 pipeline_output/{wildcards.sample}/tmp/trim/ \
+                 pipeline_output/{wildcards.sample}/tmp/dmux/
+
+        CAT_CMD1="cat"
+        if [[ {input.r1} == *.gz ]]; then CAT_CMD1="pigz -dc"; fi
+        CAT_CMD2="cat"
+        if [[ {input.r2} == *.gz ]]; then CAT_CMD2="pigz -dc"; fi
+
+        $CAT_CMD1 {input.r1} | split -d -a 4 -l 40000000 - pipeline_output/{wildcards.sample}/tmp/trim/_chunk_1
+        $CAT_CMD2 {input.r2} | split -d -a 4 -l 40000000 - pipeline_output/{wildcards.sample}/tmp/trim/_chunk_2
+
+        parallel --halt soon,fail=1 -j {resources.cpus_per_task} '
+            f={{}}; b=$(basename "$f"); cid=${{b#_chunk_1}}
+            d=$(dirname "$f"); f2="$d/_chunk_2$cid"
+            {PYTHON} {workflow.basedir}/../tools/spatialmeth_trimadapters.py \
+                "$f" "$f2" \
+                -o pipeline_output/{wildcards.sample}/tmp/trim/_out_"$cid" \
+                -a CTATCTCTTATA AGATGCGAGAAGCCAACGCTTG \
+                    AATCATACACCAATACAAAACATCAACCAC \
+                    CAAATACTCTAACCTCTCAAACACATAAAT \
+                --whitelist {input.wl} \
+                --whitelist_col 4 \
+                --dmux_dir pipeline_output/{wildcards.sample}/tmp/dmux \
+                --chunk_id "$cid" \
+                --bc-mismatch 1
+        ' ::: pipeline_output/{wildcards.sample}/tmp/trim/_chunk_1*
+
+        # Concatenate per-chunk trimmed outputs into final merged fastqs
+        :> {output.r1_out}
+        :> {output.r2_out}
+        :> {output.lambda_r1}
+        :> {output.lambda_r2}
+
+        for f in $(/bin/ls pipeline_output/{wildcards.sample}/tmp/trim/_out_[0-9][0-9][0-9][0-9]_R1.fq.gz | sort -V); do
+            cat "$f" >> {output.r1_out}
+            cat "${{f%_R1.fq.gz}}_R2.fq.gz" >> {output.r2_out}
+        done
+        for f in $(/bin/ls pipeline_output/{wildcards.sample}/tmp/trim/_out_*_Lambda_R1.fq.gz | sort -V); do
+            cat "$f" >> {output.lambda_r1}
+            cat "${{f%_Lambda_R1.fq.gz}}_Lambda_R2.fq.gz" >> {output.lambda_r2}
+        done
+
+        # Merge per-chunk per-barcode demux fastqs into one file per barcode (including UNMATCHED)
+        # Use find instead of ls glob to avoid "Argument list too long" with 60k+ chunk files
+        find pipeline_output/{wildcards.sample}/tmp/dmux -maxdepth 1 -name '*_R1.*.fq' -printf '%f\n' 2>/dev/null | \
+            sed 's|_R1[.][^.]*[.]fq||' | sort -u | while read bc; do
+            cat pipeline_output/{wildcards.sample}/tmp/dmux/"${{bc}}"_R1.*.fq > pipeline_output/{wildcards.sample}/dmux/"${{bc}}"_R1.fq || true
+            cat pipeline_output/{wildcards.sample}/tmp/dmux/"${{bc}}"_R2.*.fq > pipeline_output/{wildcards.sample}/dmux/"${{bc}}"_R2.fq || true
+        done
+        find pipeline_output/{wildcards.sample}/dmux -maxdepth 1 -name '*.fq' | \
+            parallel -j {resources.cpus_per_task} 'gzip -f {{}}'
+
+        # Merge per-chunk stats by summing each field
+        awk '{{cnt[$1]+=$2}} END {{
+            for (k in cnt) print k"\t"cnt[k]
+        }}' pipeline_output/{wildcards.sample}/tmp/trim/_out_*_stats.txt \
+            | sort -k1,1 > {output.stats}
+
+        touch {output.dmux_done}
+        """
+
+# Align each per-barcode demuxed FASTQ pair to the genome with biscuit (bisulfite-aware),
+# mark duplicates with dupsifter, sort and index BAM; emit a list of processed barcodes.
+rule dna_biscuit_align:
+    input:
+        dmux_done = "pipeline_output/{sample}/dmux/_merged_done.flag",
+    output:
+        align_txt = "pipeline_output/{sample}/dmux/align_list.txt",
+        unmatched = "pipeline_output/{sample}/bam/UNMATCHED.bam",
+    resources:
+        mem = "120G",
+        time = "96:00:00",
+        cpus_per_task = 24,
+    params:
+        biscuit_index = os.path.join(REF_DIR, ref["REF_BASE"], ref["BISCUIT_INDEX"]),
+        ref_fasta     = os.path.join(REF_DIR, ref["REF_BASE"], ref["REF_FASTA"]),
+    shell:
+        """
+        set -xe
+        mkdir -p pipeline_output/{wildcards.sample}/bam/
+        :>{output.align_txt}
+        for fq1 in pipeline_output/{wildcards.sample}/dmux/*_R1.fq.gz; do
+            barcode=$(basename $fq1 _R1.fq.gz)
+            out_dup=pipeline_output/{wildcards.sample}/bam/${{barcode}}.dupsifter.stat
+            out_bam=pipeline_output/{wildcards.sample}/bam/${{barcode}}.bam
+            biscuit align {params.biscuit_index} -b 1 -@ {resources.cpus_per_task} \
+                pipeline_output/{wildcards.sample}/dmux/${{barcode}}_R2.fq.gz $fq1 | \
+                dupsifter --stats-output $out_dup {params.ref_fasta} | \
+                samtools sort -T ${{out_bam}}_tmp -O bam -o $out_bam
+            samtools index $out_bam
+            samtools flagstat $out_bam > ${{out_bam}}.flagstat
+            if [ "$barcode" != "UNMATCHED" ]; then
+                echo "$barcode" >> {output.align_txt}
+            fi
+            done
+
+        """
+
+# CpG methylation pileup: call methylation per barcode BAM, convert VCF to CpG BED,
+# merge strands, intersect with reference CpG BED, and pack into yame .cg format.
+rule dna_biscuit_pileup:
+    input:
+        align_txt = "pipeline_output/{sample}/dmux/align_list.txt",
+    output:
+        cg  = "pipeline_output/{sample}/pileup/{sample}.cg",
+        idx = "pipeline_output/{sample}/pileup/{sample}.cg.idx",
+    resources:
+        mem = "120G",
+        time = "48:00:00",
+        cpus_per_task = 24,
+    params:
+        ref_fasta = os.path.join(REF_DIR, ref["REF_BASE"], ref["REF_FASTA"]),
+        cpg_bed   = os.path.join(REF_DIR, ref["REF_BASE"], ref["CPG_BED"]),
+    shell:
+        """
+        set -xe
+        mkdir -p pipeline_output/{wildcards.sample}/pileup/
+        tmp_pileup=pipeline_output/{wildcards.sample}/tmp/pileup/
+        mkdir -p $tmp_pileup
+        for bam in pipeline_output/{wildcards.sample}/bam/*.bam; do
+            barcode=$(basename $bam .bam)
+            out_vcf=$tmp_pileup/$barcode.vcf.gz
+            biscuit pileup -m 0 -a 0 -c -u -p -@ {resources.cpus_per_task} {params.ref_fasta} $bam | \
+                bgzip -c > $out_vcf
+            tabix -p vcf $out_vcf
+        done
+
+        vcf2cg() {{
+            biscuit vcf2bed -k 1 -t cg $1 | cut -f1-5 | \
+                LC_ALL=C sort -k1,1 -k2,2n | \
+                biscuit mergecg {params.ref_fasta} - | \
+                bedtools intersect -a {params.cpg_bed} -b - -sorted -loj | \
+                awk -v OFS="\\t" -F"\\t" -f {workflow.basedir}/../tools/wanding.awk \
+                    -e '{{ M=round($7*$8); print M,$8-M;}}' | \
+                yame pack -f 3 - ;
+        }}
+        export -f vcf2cg
+        parallel -j {resources.cpus_per_task} \
+            'vcf2cg {{}} > '$tmp_pileup'/$(basename {{}} .vcf.gz).cg' \
+            ::: $tmp_pileup/*.vcf.gz
+
+        :>{output.cg}
+        for cg_file in $tmp_pileup/*.cg; do
+            barcode=$(basename $cg_file .cg)
+            cat $cg_file >> {output.cg}
+            yame index -1 $barcode {output.cg}
+        done
+        """
+
+# Lambda spike-in: alignment and pileup for bisulfite conversion efficiency estimation.
+_lambda_ref      = config["Lambda"]
+LAMBDA_REF_FASTA     = os.path.join(REF_DIR, _lambda_ref["REF_BASE"], _lambda_ref["REF_FASTA"])
+LAMBDA_BISCUIT_INDEX = os.path.join(REF_DIR, _lambda_ref["REF_BASE"], _lambda_ref["BISCUIT_INDEX"])
+LAMBDA_CPG_BED       = os.path.join(REF_DIR, _lambda_ref["REF_BASE"], _lambda_ref["CPG_BED"])
+
+rule dna_biscuit_align_lambda:
+    input:
+        r1 = "pipeline_output/{sample}/trim/{sample}_Lambda_R1.fq.gz",
+        r2 = "pipeline_output/{sample}/trim/{sample}_Lambda_R2.fq.gz",
+    output:
+        bam      = "pipeline_output/{sample}/bam_lambda/{sample}_Lambda.bam",
+        bai      = "pipeline_output/{sample}/bam_lambda/{sample}_Lambda.bam.bai",
+        flagstat = "pipeline_output/{sample}/bam_lambda/{sample}_Lambda.bam.flagstat",
+        dup      = "pipeline_output/{sample}/bam_lambda/{sample}_Lambda.dupsifter.stat",
+    resources:
+        mem = "80G",
+        time = "24:00:00",
+        cpus_per_task = 24,
+    shell:
+        """
+        set -xe
+        mkdir -p pipeline_output/{wildcards.sample}/bam_lambda/
+        biscuit align {LAMBDA_BISCUIT_INDEX} -b 1 -@ {resources.cpus_per_task} {input.r2} {input.r1} | \
+            dupsifter --stats-output {output.dup} {LAMBDA_REF_FASTA} | \
+            samtools sort -T {output.bam}_tmp -O bam -o {output.bam}
+        samtools index {output.bam}
+        samtools flagstat {output.bam} > {output.flagstat}
+        """
+
+# CpG and non-CpG pileup on lambda BAM; allc.bed enables conversion efficiency calculation.
+rule dna_biscuit_pileup_lambda:
+    input:
+        bam = "pipeline_output/{sample}/bam_lambda/{sample}_Lambda.bam",
+        bai = "pipeline_output/{sample}/bam_lambda/{sample}_Lambda.bam.bai",
+    output:
+        vcf  = "pipeline_output/{sample}/tmp/pileup_lambda/{sample}_Lambda.vcf.gz",
+        tbi  = "pipeline_output/{sample}/tmp/pileup_lambda/{sample}_Lambda.vcf.gz.tbi",
+        allc = "pipeline_output/{sample}/tmp/pileup_lambda/{sample}_Lambda_allc.bed",
+        cg   = "pipeline_output/{sample}/pileup/{sample}_Lambda.cg",
+    resources:
+        mem = "20G",
+        time = "24:00:00",
+        cpus_per_task = 4,
+    shell:
+        """
+        set -xe
+        mkdir -p pipeline_output/{wildcards.sample}/tmp/pileup_lambda/ \
+                 pipeline_output/{wildcards.sample}/pileup/
+        biscuit pileup -m 0 -a 0 -c -u -p -@ {resources.cpus_per_task} {LAMBDA_REF_FASTA} {input.bam} | \
+            bgzip -c > {output.vcf}
+        tabix -p vcf {output.vcf}
+        biscuit vcf2bed -t c  -c {output.vcf} > {output.allc}
+        biscuit vcf2bed -k 1 -t cg {output.vcf} | cut -f1-5 | \
+            LC_ALL=C sort -k1,1 -k2,2n | \
+            biscuit mergecg {LAMBDA_REF_FASTA} - | \
+            bedtools intersect -a {LAMBDA_CPG_BED} -b - -sorted -loj | \
+            awk -v OFS="\\t" -F"\\t" -f {workflow.basedir}/../tools/wanding.awk \
+                -e '{{ M=round($7*$8); print M,$8-M;}}' | \
+            yame pack -f 3 - > {output.cg}
+        """
+
+################################################################################
+# RNA Pipeline Rules
+################################################################################
+
+bbduk        = require_config("BBDUK")
+STAR_REF_DIR = os.path.join(REF_DIR, GENOME_FOR_PATH, "STAR")
+
+# Keep only R2 reads that contain the spatial primer sequence (identifies valid library molecules)
+rule rna_filter_primer:
+    input:
+        in1 = lambda wildcards: get_fastq(wildcards, "RNA_1"),
+        in2 = lambda wildcards: get_fastq(wildcards, "RNA_2"),
+    output:
+        out1 = "pipeline_output/{sample}/tmp/rna_processed/{sample}_R1_filtered_primer.fastq.gz",
+        out2 = "pipeline_output/{sample}/tmp/rna_processed/{sample}_R2_filtered_primer.fastq.gz",
+    resources:
+        mem = "20G",
+        time = "12:00:00",
+        cpus_per_task = 12,
+    shell:
+        """
+        mkdir -p pipeline_output/{wildcards.sample}/tmp/rna_processed/ \
+                 pipeline_output/{wildcards.sample}/rna_bbduk/
+        {bbduk} \
+        in1={input.in1} in2={input.in2} \
+        outm1={output.out1} outm2={output.out2} \
+        k=22 mm=f rcomp=f restrictleft=30 skipr1=t hdist=2 \
+        stats=pipeline_output/{wildcards.sample}/rna_bbduk/{wildcards.sample}_stats.primer.txt \
+        threads={resources.cpus_per_task} \
+        literal=CAAGCGTTGGCTTCTCGCATCT
+        """
+
+# Keep reads containing linker 1 sequence in R2 (marks the BC1/BC2 junction)
+rule rna_filter_L1:
+    input:
+        in1 = "pipeline_output/{sample}/tmp/rna_processed/{sample}_R1_filtered_primer.fastq.gz",
+        in2 = "pipeline_output/{sample}/tmp/rna_processed/{sample}_R2_filtered_primer.fastq.gz",
+    output:
+        out1 = "pipeline_output/{sample}/tmp/rna_processed/{sample}_R1_filtered_linker1.fastq.gz",
+        out2 = "pipeline_output/{sample}/tmp/rna_processed/{sample}_R2_filtered_linker1.fastq.gz",
+    resources:
+        mem = "20G",
+        time = "12:00:00",
+        cpus_per_task = 12,
+    shell:
+        """
+        {bbduk} \
+        in1={input.in1} in2={input.in2} \
+        outm1={output.out1} outm2={output.out2} \
+        k=30 mm=f rcomp=f restrictleft=108 skipr1=t hdist=3 \
+        stats=pipeline_output/{wildcards.sample}/rna_bbduk/{wildcards.sample}_stats.linker1.txt \
+        threads={resources.cpus_per_task} \
+        literal=GTGGCCGATGTTTCGCATCGGCGTACGACT
+        """
+
+# Keep reads containing linker 2 sequence in R2 (marks the BC2/UMI junction)
+rule rna_filter_L2:
+    input:
+        in1 = "pipeline_output/{sample}/tmp/rna_processed/{sample}_R1_filtered_linker1.fastq.gz",
+        in2 = "pipeline_output/{sample}/tmp/rna_processed/{sample}_R2_filtered_linker1.fastq.gz",
+    output:
+        out1 = "pipeline_output/{sample}/tmp/rna_processed/{sample}_R1_filtered_linker2.fastq",
+        out2 = "pipeline_output/{sample}/tmp/rna_processed/{sample}_R2_filtered_linker2.fastq.gz",
+    resources:
+        mem = "20G",
+        time = "12:00:00",
+        cpus_per_task = 12,
+    shell:
+        """
+        {bbduk} \
+        in1={input.in1} in2={input.in2} \
+        outm1={output.out1} outm2={output.out2} \
+        k=30 mm=f rcomp=f restrictleft=70 skipr1=t hdist=3 \
+        stats=pipeline_output/{wildcards.sample}/rna_bbduk/{wildcards.sample}_stats.linker2.txt \
+        threads={resources.cpus_per_task} \
+        literal=ATCCACGTGCTTGAGAGGCCAGAGCATTCG
+        """
+
+# Extract barcode+UMI from fixed positions in R2 and reformat into STARsolo-compatible read
+rule rna_fq_process:
+    input:
+        "pipeline_output/{sample}/tmp/rna_processed/{sample}_R2_filtered_linker2.fastq.gz",
+    output:
+        "pipeline_output/{sample}/tmp/rna_processed/{sample}_R2_processed.fastq",
+    resources:
+        mem = "8G",
+        time = "4:00:00",
+        cpus_per_task = 1,
+    shell:
+        """
+        {PYTHON} {workflow.basedir}/../tools/fastq_process.py --input {input} --output {output}
+        """
+
+# Align RNA reads and quantify gene expression per spatial barcode using STARsolo
+rule rna_star_solo:
+    input:
+        read_BC  = "pipeline_output/{sample}/tmp/rna_processed/{sample}_R2_processed.fastq",
+        read_Seq = "pipeline_output/{sample}/tmp/rna_processed/{sample}_R1_filtered_linker2.fastq",
+        wl       = os.path.join(BARCODES_DIR, "RNA_whitelist_singlecol.txt"),
+    output:
+        sam = "pipeline_output/{sample}/rna_STAR/Aligned.out.sam",
+        log = "pipeline_output/{sample}/rna_STAR/Log.final.out",
+    resources:
+        mem = "100G",
+        time = "24:00:00",
+        cpus_per_task = 24,
+    shell:
+        """
+        if command -v module >/dev/null 2>&1; then module load STAR || true; fi
+        mkdir -p pipeline_output/{wildcards.sample}/rna_STAR/
+        STAR --runThreadN {resources.cpus_per_task} \
+            --genomeDir {STAR_REF_DIR} \
+            --readFilesIn {input.read_Seq} {input.read_BC} \
+            --soloType CB_UMI_Simple \
+            --soloCBwhitelist {input.wl} \
+            --soloFeatures GeneFull \
+            --outFileNamePrefix pipeline_output/{wildcards.sample}/rna_STAR/
+
+        """
+
+################################################################################
+# QC Rules
+# Run after preprocessing: snakemake --profile profiles/local_HPC -- qc
+################################################################################
+
+# Run BISCUIT's QC.sh on every per-barcode BAM (including UNMATCHED) using its pileup VCF.
+# Results are merged into a single set of tables for MultiQC.
+rule qc_biscuit:
+    input:
+        align_txt = "pipeline_output/{sample}/dmux/align_list.txt",
+        unmatched = "pipeline_output/{sample}/bam/UNMATCHED.bam",
+        cg        = "pipeline_output/{sample}/pileup/{sample}.cg",
+    output:
+        flag = "pipeline_output/{sample}/qc/biscuit_qc/.done",
+    resources:
+        mem = "32G",
+        time = "48:00:00",
+        cpus_per_task = 12,
+    params:
+        ref_fasta = os.path.join(REF_DIR, ref["REF_BASE"], ref["REF_FASTA"]),
+        assets    = os.path.join(REF_DIR, ref["REF_BASE"], ref["BISCUIT_QCASSET"]),
+    shell:
+        """
+        set -xe
+        mkdir -p pipeline_output/{wildcards.sample}/qc/biscuit_qc/
+
+        QC={workflow.basedir}/../tools/QC.sh
+        parallel -j {resources.cpus_per_task} \
+            "$QC -o pipeline_output/{wildcards.sample}/qc/biscuit_qc/ \
+                --vcf pipeline_output/{wildcards.sample}/tmp/pileup/{{}}.vcf.gz \
+                --cg-file {input.cg} \
+                --barcode {{}} \
+                {params.assets} \
+                {params.ref_fasta} \
+                {wildcards.sample}_{{}} \
+                pipeline_output/{wildcards.sample}/bam/{{}}.bam" \
+            < {input.align_txt}
+        $QC -o pipeline_output/{wildcards.sample}/qc/biscuit_qc/ \
+            --vcf pipeline_output/{wildcards.sample}/tmp/pileup/UNMATCHED.vcf.gz \
+            --cg-file {input.cg} \
+            --barcode UNMATCHED \
+            {params.assets} \
+            {params.ref_fasta} \
+            {wildcards.sample}_UNMATCHED \
+            {input.unmatched}
+        touch {output.flag}
+        """
+
+rule qc_biscuit_aggregate:
+    input:
+        flag          = "pipeline_output/{sample}/qc/biscuit_qc/.done",
+        spatial_counts = "pipeline_output/{sample}/qc/table/{sample}_spatial_barcode_counts.tsv",
+        align_txt     = "pipeline_output/{sample}/dmux/align_list.txt",
+    output:
+        flag = "pipeline_output/{sample}/qc/biscuit_qc_merged/.done",
+    resources:
+        mem = "16G",
+        time = "4:00:00",
+        cpus_per_task = 1,
+    shell:
+        """
+        {PYTHON} {workflow.basedir}/../tools/aggregate_biscuit_qc.py \
+            --input-dir      pipeline_output/{wildcards.sample}/qc/biscuit_qc/ \
+            --output-dir     pipeline_output/{wildcards.sample}/qc/biscuit_qc_merged/ \
+            --sample         {wildcards.sample} \
+            --align-txt      {input.align_txt} \
+            --spatial-counts {input.spatial_counts}
+        touch {output.flag}
+        """
+
+FEATURE_DIR    = os.path.join(REF_DIR, GENOME_FOR_PATH, "features")
+FEATURE_CM_DIR = os.path.join(REF_DIR, GENOME_FOR_PATH, f"KYCGKB_{GENOME_FOR_PATH}")
+CHROMHMM_CM    = os.path.join(REF_DIR, ref["REF_BASE"], ref["CHROMHMM_CM"])
+if GENOME_FOR_PATH == "hg38":
+    FEATS = ["ChromHMM.20220303", "Win100k.20220228", "Chromosome.20221129"]
+else:
+    FEATS = ["ChromHMM.20220414", "Win100k.20220228", "Win1m.20230709", "Chromosome.20221129"]
+
+# Per-barcode read counts, spatial mapping, and QC heatmap plots
+rule qc_barcode_summary:
+    input:
+        dmux_done = "pipeline_output/{sample}/dmux/_merged_done.flag",
+        align_txt = "pipeline_output/{sample}/dmux/align_list.txt",
+        whitelist = os.path.join(BARCODES_DIR, "spatial_barcodes.txt"),
+    output:
+        spatial_counts = "pipeline_output/{sample}/qc/table/{sample}_spatial_barcode_counts.tsv",
+        plots_done     = "pipeline_output/{sample}/qc/plots/.done",
+    resources:
+        mem = "12G",
+        cpus_per_task = 4,
+    shell:
+        """
+        {PYTHON} {workflow.basedir}/../tools/barcode_summary.py \
+            --dmux-dir   pipeline_output/{wildcards.sample}/dmux/ \
+            --bam-dir    pipeline_output/{wildcards.sample}/bam/ \
+            --whitelist  {input.whitelist} \
+            --sample     {wildcards.sample} \
+            --table-dir  pipeline_output/{wildcards.sample}/qc/table/ \
+            --plots-dir  pipeline_output/{wildcards.sample}/qc/plots/
+        touch {output.plots_done}
+        """
+
+# MultiQC aggregation + self-contained HTML report
+rule qc_report:
+    input:
+        star_log       = lambda wc: f"pipeline_output/{wc.sample}/rna_STAR/Log.final.out"
+                         if wc.sample in RNA_SAMPLES else [],
+        biscuit_merged = "pipeline_output/{sample}/qc/biscuit_qc_merged/.done",
+        spatial_counts = "pipeline_output/{sample}/qc/table/{sample}_spatial_barcode_counts.tsv",
+        trim_stats     = "pipeline_output/{sample}/trim/{sample}_trim_stats.txt",
+        cg             = "pipeline_output/{sample}/pileup/{sample}.cg",
+        plots_done     = "pipeline_output/{sample}/qc/plots/.done",
+    output:
+        multiqc      = "pipeline_output/{sample}/qc/html/multiqc_report.html",
+        multiqc_data = directory("pipeline_output/{sample}/qc/html/multiqc_report_data"),
+        report       = "pipeline_output/{sample}/qc/html/qc_report.html",
+        stats_mqc    = "pipeline_output/{sample}/qc/table/{sample}_stats_mqc.tsv",
+        chromhmm_sum = "pipeline_output/{sample}/qc/table/{sample}_chromhmm_summary.tsv",
+    resources:
+        mem = "12G",
+        cpus_per_task = 4,
+    shell:
+        """
+        mkdir -p pipeline_output/{wildcards.sample}/qc/html/
+        
+        # Explicitly aggregate methylation levels for TssA and Tx
+        yame rowop -o musum {input.cg} | \
+            yame summary -m {CHROMHMM_CM} - > {output.chromhmm_sum}
+
+        {PYTHON} {workflow.basedir}/../tools/write_stats_mqc.py \
+            --trim-stats       {input.trim_stats} \
+            --spatial-counts   {input.spatial_counts} \
+            --chromhmm-summary {output.chromhmm_sum} \
+            --sample           {wildcards.sample} \
+            --output-dir       pipeline_output/{wildcards.sample}/qc/table/
+        RNA_DIRS=""
+        if [[ -n "{input.star_log}" ]]; then
+            RNA_DIRS="pipeline_output/{wildcards.sample}/rna_STAR/ pipeline_output/{wildcards.sample}/rna_bbduk/"
+        fi
+        {PYTHON} -m multiqc \
+            $RNA_DIRS \
+            pipeline_output/{wildcards.sample}/qc/biscuit_qc_merged/ \
+            pipeline_output/{wildcards.sample}/qc/table/ \
+            --outdir pipeline_output/{wildcards.sample}/qc/html/ \
+            --filename multiqc_report.html \
+            --force \
+            --cl-config "sample_names_replace: {{rna_STAR: {wildcards.sample}}}"
+        {PYTHON} {workflow.basedir}/../tools/generate_html_report.py \
+            --spatial-counts {input.spatial_counts} \
+            --plots-dir      pipeline_output/{wildcards.sample}/qc/plots/ \
+            --sample         {wildcards.sample} \
+            --multiqc-html   {output.multiqc} \
+            --output         {output.report}
+        """
+
+# Per-barcode mean methylation summarized over genomic features (ChromHMM, windows, chromosomes)
+rule feature_mean:
+    input:
+        cg   = "pipeline_output/{sample}/pileup/{sample}.cg",
+        feat = os.path.join(FEATURE_DIR, "{feat}.bed.gz"),
+    output:
+        txt = "pipeline_output/{sample}/qc/features/{feat}.txt.gz",
+    resources:
+        mem = "120G",
+        time = "6:00:00",
+        cpus_per_task = 24,
+    shell:
+        """
+        set -xe
+        tmp=pipeline_output/{wildcards.sample}/qc/tmp/features_{wildcards.feat}/
+        rm -rf $tmp && mkdir -p $tmp
+        cut -f1 {input.cg}.idx | parallel -j {resources.cpus_per_task} \
+            'yame subset {input.cg} {{}} | \
+                yame summary -q {{}} -m {FEATURE_CM_DIR}/{wildcards.feat}.cm - | \
+                gzip -c > '"$tmp"'/{{}}.txt.gz'
+        zcat $tmp/*.txt.gz | awk 'NR==1 || $1 != "QFile"' | gzip -c > {output.txt}
+        rm -rf $tmp
+        """
+
+
+# QC target: spatial HTML report + MultiQC + feature-level methylation summaries
+rule qc:
+    input:
+        expand("pipeline_output/{sample}/qc/html/qc_report.html", sample=SAMPLES),
+        expand("pipeline_output/{sample}/qc/features/{feat}.txt.gz", sample=SAMPLES, feat=FEATS),
+
+################################################################################
+# Final Output
+################################################################################
+
+rule copy_final_sample_outputs:
+    input:
+        cg      = "pipeline_output/{sample}/pileup/{sample}.cg",
+        cg_idx  = "pipeline_output/{sample}/pileup/{sample}.cg.idx",
+        lambda_cg = "pipeline_output/{sample}/pileup/{sample}_Lambda.cg",
+        qc      = "pipeline_output/{sample}/qc/html/qc_report.html",
+        multiqc = "pipeline_output/{sample}/qc/html/multiqc_report.html",
+        multiqc_data = "pipeline_output/{sample}/qc/html/multiqc_report_data",
+    output:
+        cg      = "final_output/{sample}/{sample}.cg",
+        cg_idx  = "final_output/{sample}/{sample}.cg.idx",
+        lambda_cg = "final_output/{sample}/{sample}_Lambda.cg",
+        qc      = "final_output/{sample}/qc_report.html",
+        multiqc = "final_output/{sample}/multiqc_report.html",
+        multiqc_data = directory("final_output/{sample}/multiqc_report_data"),
+    shell:
+        """
+        mkdir -p final_output/{wildcards.sample}
+        cp {input.cg} {output.cg}
+        cp {input.cg_idx} {output.cg_idx}
+        cp {input.lambda_cg} {output.lambda_cg}
+        cp {input.qc} {output.qc}
+        cp {input.multiqc} {output.multiqc}
+        rm -rf {output.multiqc_data}
+        cp -r {input.multiqc_data} {output.multiqc_data}
+        """
+
+rule copy_final_solo_out:
+    input:
+        "pipeline_output/{sample}/rna_STAR/Log.final.out",
+    output:
+        directory("final_output/{sample}/Solo.out"),
+    shell:
+        """
+        mkdir -p final_output/{wildcards.sample}
+        cp -r pipeline_output/{wildcards.sample}/rna_STAR/Solo.out {output}
+        """
+
+################################################################################
+# Clean
+# NOTE: run allc target before clean — clean removes tmp/ pileup VCFs needed by allc.
+################################################################################
+
+rule clean:
+    run:
+        import shutil
+        for sample in SAMPLES:
+            for d in [
+                os.path.join("pipeline_output", sample, "tmp"),
+                os.path.join("pipeline_output", sample, "qc", "plots"),
+                os.path.join("pipeline_output", sample, "qc", "tmp"),
+            ]:
+                if os.path.exists(d):
+                    shutil.rmtree(d)
+                    print(f"Removed {d}")
+
+################################################################################
+# AllC Rules
+# Run after preprocessing (before clean): snakemake --profile profiles/local_HPC -- allc
+################################################################################
+
+FEATS_CH = ["TrinucCHxChromHMM.20220414", "GeneCAC.20220322", "Dinuc.20231030", "TrinucCH.20220321"]
+
+# All-cytosine pileup packed into yame .allc format; enables non-CpG methylation analysis.
+rule biscuit_pileup_allc:
+    input:
+        cg = "pipeline_output/{sample}/pileup/{sample}.cg",
+    output:
+        allc = "pipeline_output/{sample}/pileup/{sample}.allc",
+    resources:
+        mem = "250G",
+        time = "168:00:00",
+        cpus_per_task = 15,
+    params:
+        ref_fasta = os.path.join(REF_DIR, ref["REF_BASE"], ref["REF_FASTA"]),
+        allc_bed  = os.path.join(REF_DIR, ref["REF_BASE"], ref["ALLC_BED"]),
+    shell:
+        """
+        set -xe
+        tmp_pileup=pipeline_output/{wildcards.sample}/tmp/pileup/
+
+        BetaCov2MU() {{
+            awk -F"\t" -v OFS="\t" -f {workflow.basedir}/../tools/wanding.awk \
+                -e '$4=="."{{print 0,0;next;}}{{M=round($4*$5); print M,$5-M;}}' $1;
+        }}
+        export -f BetaCov2MU
+
+        find $tmp_pileup -name '*.vcf.gz' | parallel -j {resources.cpus_per_task} '
+            barcode=$(basename {{}} .vcf.gz)
+            biscuit vcf2bed -k 1 -t c {{}} | \
+                LC_ALL=C sort -k1,1 -k2,2n -T $tmp_pileup > $tmp_pileup/allc_$barcode.bed
+            bedtools intersect -a {params.allc_bed} -b $tmp_pileup/allc_$barcode.bed -sorted -loj | \
+                cut -f1,2,3,10,11 | BetaCov2MU | yame pack -f 3 - > $tmp_pileup/$barcode.allc
+            rm -f $tmp_pileup/allc_$barcode.bed
+        '
+
+        :>{output.allc}
+        for f in $tmp_pileup/*.allc; do
+            barcode=$(basename $f .allc)
+            cat $f >> {output.allc}
+            yame index -1 $barcode {output.allc}
+        done
+        """
+
+# Per-barcode mean non-CpG methylation summarized over genomic features.
+rule feature_mean_allc:
+    input:
+        allc = "pipeline_output/{sample}/pileup/{sample}.allc",
+        feat = os.path.join(FEATURE_DIR, "{feat}.bed.gz"),
+    output:
+        txt = "pipeline_output/{sample}/qc/features_allc/{feat}.txt.gz",
+    resources:
+        mem = "150G",
+        time = "72:00:00",
+        cpus_per_task = 24,
+    shell:
+        """
+        set -xe
+        tmp=pipeline_output/{wildcards.sample}/qc/tmp/features_allc_{wildcards.feat}/
+        rm -rf $tmp && mkdir -p $tmp
+        tmp_pileup=pipeline_output/{wildcards.sample}/tmp/pileup/
+
+        tallyGroup() {{
+            awk -v barcode=$2 -v OFS="\t" -F"\t" \
+                '{{cnt[$2]+=1; sum[$2]+=$1;}}
+                 END{{for(k in cnt){{print k, sum[k]/cnt[k], cnt[k], "{wildcards.sample}", barcode;}}}}' $1
+        }}
+        export -f tallyGroup
+
+        find $tmp_pileup -name '*.vcf.gz' | parallel -j {resources.cpus_per_task} '
+            barcode=$(basename {{}} .vcf.gz)
+            biscuit vcf2bed -k 1 -t c {{}} | \
+                bedtools intersect -a - -b {input.feat} -sorted -wo | \
+                cut -f4,9 | tallyGroup - "$barcode" | sort -k1,1 \
+                > '"$tmp"'/$barcode.tmp
+        '
+        cat $tmp/*.tmp | gzip -c > {output.txt}
+        rm -rf $tmp
+        """
+
+# AllC target: all-cytosine pileup and non-CpG feature summaries
+rule allc:
+    input:
+        expand("pipeline_output/{sample}/pileup/{sample}.allc", sample=SAMPLES),
+        expand("pipeline_output/{sample}/qc/features_allc/{feat}.txt.gz", sample=SAMPLES, feat=FEATS_CH),

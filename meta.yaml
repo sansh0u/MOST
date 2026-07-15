@@ -27,7 +27,8 @@ requirements:
     - python
     
     # bio tools
-    - biopython >=1.86
+    - snakemake >=9.23.1
+    - biopython >=1.87
     - bbmap >=39.81
     - cutadapt
     - chromap >=0.3.2

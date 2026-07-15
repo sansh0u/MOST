@@ -221,32 +221,7 @@ def find_high_entropy_regions(
             regions.append((start, end))
 
     return regions
-# -----------------------------------------------------
-    # plot entropy profile
-# -----------------------------------------------------
 
-def plot_entropy(entropy, bc1_loc , bc2_loc, title="Global Entropy Profile" ):
-
-    plt.figure(figsize=(14, 5))
-
-    plt.plot(entropy)
-
-    plt.xlabel("Position")
-
-    plt.ylabel("Shannon entropy")
-    plt.axvline(bc1_loc, linestyle="--")
-    plt.axvline(bc1_loc + 8, linestyle="--")
-    plt.axvline(bc2_loc, linestyle="--")
-    plt.axvline(bc2_loc + 8, linestyle="--")
-    plt.title(title)
-
-    plt.ylim(0, 2.1)
-
-    plt.grid(alpha=0.3)
-
-    plt.tight_layout()
-
-    plt.show()
 
 def filtered(regions,bc1_loc,bc2_loc):
     filtered_regions = []
@@ -341,7 +316,7 @@ def scan(cfg,method):
     filtered_regions = filtered(regions,bc1_loc,bc2_loc)
     umi_start = umi_end = umi_len = 0
     
-    if method == "ATAC":
+    if method == "ATAC" or method == "DMT":
         if not filtered_regions:
             print("No UMI region found.")
             
@@ -367,8 +342,6 @@ def scan(cfg,method):
     # -----------------------------------------------------
     # output
     # -----------------------------------------------------
-
-   
     return {
         "bc2": bc2_loc,
         "bc1": bc1_loc,
@@ -378,13 +351,10 @@ def scan(cfg,method):
         'umi_len': umi_len
     }
 
-def check_adapter(cfg):
+def check_adapter(fastq,Adapter,mismatch):
     
     MAX_READS = 100000
-    fastq = cfg.sequence_file.file1
     seqs1 = read_fastq_head(fastq, MAX_READS)
-    Adapter = cfg.advanced.adapter
-    mismatch = cfg.advanced.adapter_mismatch
 
     if Adapter:
         hits = scan_adapter_positions(seqs1, Adapter, mismatch, 50)
@@ -409,5 +379,7 @@ def scan_len(cfg):
     print(f"reads loaded: {len(seqs)}")
     read_len = len(seqs[0])
     return read_len
+
+
 
     

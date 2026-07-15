@@ -1,7 +1,7 @@
-project: #test
-
-method: RNA #ATAC/RNA
-
+project: 
+#test
+method: RNA 
+# method options: RNA ATAC DMT ZUMIS ASTRO
 sequence_file:
   file1: /mnt/d/prog/RNA2_1209_Illu_1.fq.gz
   file2: /mnt/d/prog/RNA2_1209_Illu_2.fq.gz
@@ -18,13 +18,19 @@ out_dir: /home/sanshou/project/toolkit/output/
 
 threads: 8
 
+tools: 
+  zumis:
+  astro:
+
 advanced:
   primer: #CAAGCGTTGGCTTCTCGCATCT
   linker1: #GTGGCCGATGTTTCGCATCGGCGTACGACT
   linker2: #ATCCACGTGCTTGAGAGGCCAGAGCATTCG
   
-  UMI: (23-32) #(23-32)
-  BC: (33-40,71-78) #(33-40,71-78)
+  UMI: (23-32) 
+  #(23-32)
+  BC: (33-40,71-78) 
+  #(33-40,71-78)
   
   hdist: #3
   adapter: #AAGCAGTGGTATCAACGCAGAGTGAATGGG

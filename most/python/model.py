@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Optional
-
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from importlib.resources import files
 
 DEFAULTS = {
@@ -176,8 +175,11 @@ class Config(BaseModel):
     )
 
     runtime: Runtime = Field(
-        default_factory=Runtime,
-        exclude=True
+        default_factory=Runtime
+    )
+
+    tools: dict = Field(
+        default_factory=dict
     )
 
     @field_validator(
@@ -227,14 +229,18 @@ class Config(BaseModel):
 
         v = v.upper()
 
-        if v not in {"RNA", "ATAC"}:
-
+        if v not in {
+            "RNA",
+            "ATAC",
+            "ZUMIS",
+            "ASTRO",
+            "DMT"
+        }:
             raise ValueError(
                 f"Unknown method: {v}"
             )
 
         return v
-
     @field_validator("threads")
     @classmethod
     def check_threads(cls, v):
@@ -243,3 +249,26 @@ class Config(BaseModel):
             return DEFAULTS["threads"]
 
         return v
+
+    @model_validator(mode="after")
+    def check_tools(self):
+
+        if self.method == "ZUMIS":
+
+            if not self.tools.get("zumis"):
+
+                raise ValueError(
+                    "method=ZUMIS requires tools.zUMIs configuration"
+                )
+
+
+        if self.method == "ASTRO":
+
+            if not self.tools.get("astro"):
+
+                raise ValueError(
+                    "method=ASTRO requires tools.ASTRO configuration"
+                )
+
+
+        return self

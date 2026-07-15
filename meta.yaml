@@ -12,6 +12,8 @@ build:
 
 requirements:
   build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
     - python
     - pip
 
@@ -40,8 +42,8 @@ requirements:
     - pandas >=2.3
     - scipy >=1.15
     - matplotlib >=3.10
+    - python-kaleido >=0.2.1
     - plotly >=5.24.1
-    - kaleido >=0.2.1
 
     # utils
     - pyyaml >=6.0.3

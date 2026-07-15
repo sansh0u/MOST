@@ -16,13 +16,13 @@ requirements:
     - pip
 
   host:
-    - python >=3.11
+    - python >=3.11,<3.12
     - pip
     - setuptools >=68
     - wheel
 
   run:
-    - python >=3.11
+    - python >=3.11,<3.12
     
     # bio tools
     - snakemake >=9.23.1

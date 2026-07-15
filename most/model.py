@@ -65,6 +65,8 @@ class Reference(BaseModel):
         "extra": "forbid"
     }
 
+    genome: str
+
     chromap_index: Optional[str] = None
 
     fa_file: str
@@ -240,6 +242,17 @@ class Config(BaseModel):
                 f"Unknown method: {v}"
             )
 
+        return v
+    @field_validator("genome", mode="before")
+    @classmethod
+    def check_genome(cls, v):
+        if v is None:
+            raise ValueError("reference.genome is required")
+
+        if isinstance(v, str):
+            v = v.strip()
+            if not v:
+                raise ValueError("reference.genome cannot be empty")
         return v
     @field_validator("threads")
     @classmethod

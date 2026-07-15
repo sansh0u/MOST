@@ -19,7 +19,7 @@ Examples:
 """
 , no_args_is_help = True)
 
-@app.command(no_args_is_help = True)
+@app.command("config", no_args_is_help = True)
 def run(config_file):
     cfg = load_yaml(config_file)
     method = cfg.method

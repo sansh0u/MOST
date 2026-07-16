@@ -168,5 +168,5 @@ rule stpipeline:
         --verbose \
         {input.r1} \
         {input.r2}
-
+        """
     

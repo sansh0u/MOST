@@ -87,7 +87,18 @@ class Reference(BaseModel):
             "barcode_file"
         )
 
+    @field_validator("genome", mode="before")
+    @classmethod
+    def check_genome(cls, v):
+        if v is None:
+            raise ValueError("reference.genome is required")
 
+        if isinstance(v, str):
+            v = v.strip()
+            if not v:
+                raise ValueError("reference.genome cannot be empty")
+        return v
+    
 class Advanced(BaseModel):
 
     model_config = {
@@ -219,7 +230,7 @@ class Config(BaseModel):
         
         return str(parent / "output")
     
-    @field_validator("method")
+    @field_validator("method", mode="before")
     @classmethod
     def normalize_method(cls, v):
 
@@ -243,17 +254,7 @@ class Config(BaseModel):
             )
 
         return v
-    @field_validator("genome", mode="before")
-    @classmethod
-    def check_genome(cls, v):
-        if v is None:
-            raise ValueError("reference.genome is required")
-
-        if isinstance(v, str):
-            v = v.strip()
-            if not v:
-                raise ValueError("reference.genome cannot be empty")
-        return v
+    
     @field_validator("threads")
     @classmethod
     def check_threads(cls, v):

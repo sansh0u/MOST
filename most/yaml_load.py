@@ -13,7 +13,7 @@ def unzip(file_path,thread):
     out = file_path[:-3]
     with open(out, "wb") as f:
         subprocess.run(
-            ["pigz","-p",thread,"-dc", file_path], stdout=f, check=True
+            ["pigz","-p",str(thread),"-dc", file_path], stdout=f, check=True
         )
 
     return out

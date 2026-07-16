@@ -2,10 +2,8 @@ import typer
 import os
 import subprocess
 from most.yaml_load import load_yaml, config_cal
-from importlib.metadata import version, PackageNotFoundError
-
-import typer
 from importlib.metadata import version
+from importlib.resources import files
 
 app = typer.Typer()
 
@@ -32,13 +30,13 @@ def main(
     cfg = load_yaml(config_file)
     method = cfg.method
     path, zpath = config_cal(cfg)
-
+    snakefile = files("most") / "workflow" / "rna.smk"
     try:
         subprocess.run(
             [
                 "snakemake",
                 "--snakefile",
-                f"workflow/{method.lower()}.smk",
+                str(snakefile),
                 "--configfile",
                 str(path)
             ],

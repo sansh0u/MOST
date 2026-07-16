@@ -70,7 +70,7 @@ def config_cal(cfg):
     umi = cfg.advanced.UMI
     bc = cfg.advanced.BC
     threads = cfg.threads
-    out_dir = cfg.outdir
+    out_dir = cfg.out_dir
     fa_file = cfg.reference.fa_file
     fa_file = unzip(fa_file,threads)
     cfg.reference.fa_file = fa_file

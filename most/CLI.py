@@ -30,7 +30,7 @@ def main(
     cfg = load_yaml(config_file)
     method = cfg.method
     path, zpath = config_cal(cfg)
-    snakefile = files("most") / "workflow" / "rna.smk"
+    snakefile = files("most") / "workflow" / f"{method.lower()}.smk"
     try:
         subprocess.run(
             [
@@ -38,7 +38,10 @@ def main(
                 "--snakefile",
                 str(snakefile),
                 "--configfile",
-                str(path)
+                str(path),
+                "--cores",
+                str(cfg.threads),
+                "--printshellcmds"
             ],
             check=True
         )

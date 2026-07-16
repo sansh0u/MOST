@@ -71,6 +71,7 @@ def config_cal(cfg):
     bc = cfg.advanced.BC
     threads = cfg.threads
     out_dir = Path(cfg.out_dir)
+    out_dir.mkdir(parents=True,exist_ok=True)
     fa_file = cfg.reference.fa_file
     fa_file = unzip(fa_file,threads)
     cfg.reference.fa_file = fa_file

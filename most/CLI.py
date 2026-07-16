@@ -2,44 +2,53 @@ import typer
 import os
 import subprocess
 from most.yaml_load import load_yaml, config_cal
+from importlib.metadata import version, PackageNotFoundError
 
-app = typer.Typer(help = """
- pipeline toolkit
+import typer
+from importlib.metadata import version
 
-Commands:
+app = typer.Typer()
 
-  run     Run main pipeline
-  zumis   Run zUMIs pipeline
 
-Examples:
+def get_version():
+    return version("most")
 
-  most run --config config.yaml
 
-  most zumis -dbit -in1 R1.fq -in2 R2.fq -out outdir
-"""
-, no_args_is_help = True)
+@app.callback(invoke_without_command=True)
+def main(
+    ctx: typer.Context,
+    config_file: str = typer.Option(None,"--config","-c"),
+    version_flag: bool = typer.Option(False,"--version","-v",help="Show version and exit")
+):
 
-@app.command(no_args_is_help = True)
-def run(config_file: str = typer.Option(..., "--config", "-c")):
+    if version_flag:
+        typer.echo(f"most version {get_version()}")
+        raise typer.Exit()
+
+    if config_file is None:
+        typer.echo(ctx.get_help())
+        raise typer.Exit()
+
     cfg = load_yaml(config_file)
     method = cfg.method
-    path,zpath = config_cal(cfg)
-    success = False 
+    path, zpath = config_cal(cfg)
+
     try:
         subprocess.run(
-    [
-        "snakemake",
-        "--snakefile",
-        f"workflow/{method.lower()}.smk",
-        "--configfile",
-        str(path)
-    ]
-)
-        success = True
+            [
+                "snakemake",
+                "--snakefile",
+                f"workflow/{method.lower()}.smk",
+                "--configfile",
+                str(path)
+            ],
+            check=True
+        )
+
     finally:
-        if success:
-            if os.path.exists(path):
-                os.remove(path)
-            if zpath and os.path.exists(zpath):
-                os.remove(zpath)
+        if os.path.exists(path):
+            os.remove(path)
+        if zpath and os.path.exists(zpath):
+            os.remove(zpath)
+
             

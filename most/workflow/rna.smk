@@ -1,6 +1,6 @@
 rule all:
     input:
-        (f"{config['out_dir']}/temp")
+        directory(f"{config['out_dir']}/st_pipeline")
 
 
 rule qc:
@@ -142,8 +142,8 @@ rule stpipeline:
         gtf_file=config["reference"]["gtf_file"],
         bc_file=config["reference"]["barcode_file"]
     output:
-        r1={config['out_dir']},
-        r2=(f"{config['out_dir']}/temp")
+        r1=directory(f"{config['out_dir']}/st_pipeline"),
+        r2=directory(f"{config['out_dir']}/temp")
     params:
         stpipeline_id=config["project"],
         log_file=f"{config['out_dir']}/{config['project']}_log.txt"

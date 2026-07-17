@@ -8,6 +8,7 @@ def qc_adapt(fastq_intput_1,fastq_intput_2,CleanFq1,CleanFq2,threads,Adapter,mis
     "cutadapt", "-m", "18", "-a", "A{10}N{150}",
     "--times", "4",
     "-g", Adapter,
+    "--pair-filter=any",
     "-j", str(threads),
     "-o", CleanFq1,
     "-p", CleanFq2,
@@ -17,6 +18,7 @@ def qc_adapt(fastq_intput_1,fastq_intput_2,CleanFq1,CleanFq2,threads,Adapter,mis
     cmd2 = [
     "cutadapt", "-m", "18", "-a", "A{10}N{150}",
     "--times", "4",
+    "--pair-filter=any",
     "-j", str(threads),
     "-o", CleanFq1,
     "-p", CleanFq2,

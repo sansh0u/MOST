@@ -108,8 +108,8 @@ rule gzip_file:
         config["threads"]
     shell:
         """
-        pigz -p {threads} -f {input.r1}
-        pigz -p {threads} -f {input.r2}
+        pigz -p {threads} {input.r1}
+        pigz -p {threads} {input.r2}
         """
 
 

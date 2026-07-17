@@ -151,6 +151,9 @@ rule stpipeline:
         config["threads"]
     shell:
         """
+        mkdir -p {output.r1}
+        mkdir -p {output.r2}
+        
         st_pipeline_run \
         --output-folder {output.r1} \
         --temp-folder {output.r2} \

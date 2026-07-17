@@ -1,6 +1,6 @@
 rule all:
     input:
-        f"{config['out_dir']}/st_pipeline_output"
+        (f"{config['out_dir']}/temp")
 
 
 rule qc:
@@ -143,7 +143,7 @@ rule stpipeline:
         bc_file=config["reference"]["barcode_file"]
     output:
         r1={config['out_dir']},
-        temp_folder=directory(f"{config['out_dir']}/temp")
+        r2=(f"{config['out_dir']}/temp")
     params:
         stpipeline_id=config["project"],
         log_file=f"{config['out_dir']}/{config['project']}_log.txt"
@@ -153,7 +153,7 @@ rule stpipeline:
         """
         st_pipeline_run \
         --output-folder {output.r1} \
-        --temp-folder {output.temp_folder} \
+        --temp-folder {output.r2} \
         --ids {input.bc_file} \
         --threads {threads} \
         --ref-map {input.star_index} \

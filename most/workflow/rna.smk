@@ -142,10 +142,10 @@ rule stpipeline:
         gtf_file=config["reference"]["gtf_file"],
         bc_file=config["reference"]["barcode_file"]
     output:
-        r1=directory(f"{config['out_dir']}/st_pipeline_output")
+        r1={config['out_dir']},
+        temp_folder=directory(f"{config['out_dir']}/temp")
     params:
         stpipeline_id=config["project"],
-        temp_folder=f"{config['out_dir']}/temp",
         log_file=f"{config['out_dir']}/{config['project']}_log.txt"
     threads:
         config["threads"]
@@ -153,7 +153,7 @@ rule stpipeline:
         """
         st_pipeline_run \
         --output-folder {output.r1} \
-        --temp-folder {params.temp_folder} \
+        --temp-folder {output.temp_folder} \
         --ids {input.bc_file} \
         --threads {threads} \
         --ref-map {input.star_index} \

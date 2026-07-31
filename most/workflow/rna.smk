@@ -141,7 +141,7 @@ rule stpipeline:
         star_index=config["reference"]["star_index"],
         gtf_file=config["reference"]["gtf_file"],
         bc_file=config["reference"]["barcode_file"],
-        out=directory({config['out_dir']})
+        out=directory({config['out_dir']}),
         temp=directory(f"{config['out_dir']}/temp")
     output:
         r1=(f"{config['out_dir']}/{config['project']}.bed")

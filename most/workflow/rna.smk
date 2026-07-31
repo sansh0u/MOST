@@ -140,9 +140,9 @@ rule stpipeline:
         b_file=f"{config['out_dir']}/linker2_R2.fastq.gz",
         star_index=config["reference"]["star_index"],
         gtf_file=config["reference"]["gtf_file"],
-        bc_file=config["reference"]["barcode_file"]
+        bc_file=config["reference"]["barcode_file"],
+        out=directory({config['out_dir']})
     output:
-        r1=directory(f"{config['out_dir']}/st_pipeline"),
         r2=directory(f"{config['out_dir']}/temp")
     params:
         stpipeline_id=config["project"],
@@ -151,11 +151,8 @@ rule stpipeline:
         config["threads"]
     shell:
         """
-        mkdir -p {output.r1}
-        mkdir -p {output.r2}
-        
         st_pipeline_run \
-        --output-folder {output.r1} \
+        --output-folder {input.out} \
         --temp-folder {output.r2} \
         --ids {input.bc_file} \
         --threads {threads} \

@@ -1,6 +1,6 @@
 rule all:
     input:
-        directory(f"{config['out_dir']}/st_pipeline")
+        (f"{config['out_dir']}/{config['project']}.bed")
 
 
 rule qc:
@@ -142,8 +142,9 @@ rule stpipeline:
         gtf_file=config["reference"]["gtf_file"],
         bc_file=config["reference"]["barcode_file"],
         out=directory({config['out_dir']})
+        temp=directory(f"{config['out_dir']}/temp")
     output:
-        r2=directory(f"{config['out_dir']}/temp")
+        r1=(f"{config['out_dir']}/{config['project']}.bed")
     params:
         stpipeline_id=config["project"],
         log_file=f"{config['out_dir']}/{config['project']}_log.txt"
@@ -151,9 +152,12 @@ rule stpipeline:
         config["threads"]
     shell:
         """
+        mkdir -p {input.out}
+        mkdir -p {input.temp}
+
         st_pipeline_run \
         --output-folder {input.out} \
-        --temp-folder {output.r2} \
+        --temp-folder {input.temp} \
         --ids {input.bc_file} \
         --threads {threads} \
         --ref-map {input.star_index} \

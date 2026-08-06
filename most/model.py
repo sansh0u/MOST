@@ -20,6 +20,9 @@ DEFAULTS = {
     
     "barcode_file": str(files("most.barcode") / "20240614_2500barcode_AB_update.txt"),
 
+    "rna_barcode_file":
+        str(files("most.barcode") / "20240614_2500barcode_AB_update_RNA.txt"),
+
     "hdist": 3,
 
     "rna_lib": "illumina",
@@ -75,17 +78,13 @@ class Reference(BaseModel):
 
     star_index: str
 
-    barcode_file: str = \
-        DEFAULTS["barcode_file"]
+    barcode_file: Optional[str] = None
 
     @field_validator("barcode_file", mode="before")
     @classmethod
     def replace_defaults(cls, v):
 
-        return empty_to_default(
-            v,
-            "barcode_file"
-        )
+        return v
 
     @field_validator("genome", mode="before")
     @classmethod
@@ -266,23 +265,22 @@ class Config(BaseModel):
 
     @model_validator(mode="after")
     def check_tools(self):
+        if not self.reference.barcode_file:
+            if self.method == "RNA":
+                self.reference.barcode_file = DEFAULTS["rna_barcode_file"]
+            else:
+                self.reference.barcode_file = DEFAULTS["barcode_file"]
 
         if self.method == "ZUMIS":
-
             if not self.tools.get("zumis"):
-
                 raise ValueError(
                     "method=ZUMIS requires tools.zUMIs configuration"
                 )
 
-
         if self.method == "ASTRO":
-
             if not self.tools.get("astro"):
-
                 raise ValueError(
                     "method=ASTRO requires tools.ASTRO configuration"
                 )
-
 
         return self

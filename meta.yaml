@@ -31,7 +31,7 @@ requirements:
     - cutadapt >=5.2
     - chromap >=0.3.2
     - samtools >=1.23
-    - star >=2.7
+    - star >=2.7.9a
     - pigz >=2.8
 
     # scientific stack

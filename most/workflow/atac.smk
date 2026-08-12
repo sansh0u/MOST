@@ -72,15 +72,16 @@ rule bbduk_linker2:
 
 rule atac_bc:
     input:
-        r1=f"{config['out_dir']}/linker2_R2.fastq.gz"
+        r1=f"{config['out_dir']}/linker2_R1.fastq.gz",
+        r2=f"{config['out_dir']}/linker2_R2.fastq.gz"
     output:
         r1=temp(f"{config['out_dir']}/output_R1.fastq"),
         r2=temp(f"{config['out_dir']}/output_R2.fastq")
     params:
-        seq_start=config['runtime']['seq_start']
-        bc2_start=config['runtime']['bc2_start']   
-        bc2_end=config['runtime']['bc2_end'] 
-        bc1_start=config['runtime']['bc1_start']
+        seq_start=config['runtime']['seq_start'],
+        bc2_start=config['runtime']['bc2_start'],  
+        bc2_end=config['runtime']['bc2_end'], 
+        bc1_start=config['runtime']['bc1_start'],
         bc1_end=config['runtime']['bc1_end']
     run:
         from most.preprocess.bc_process import atac_bc

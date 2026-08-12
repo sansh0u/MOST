@@ -1,6 +1,6 @@
 rule all:
     input:
-        (f"{config['out_dir']}/{config['project']}.bed")
+       f"{config['out_dir']}/{config['project']}_expression.csv"
 
 
 rule qc:
@@ -98,7 +98,7 @@ rule dbit_qc:
     input:
         r1=f"{config['out_dir']}/linker2_R1.fastq.gz"
     output:
-        r1=temp(f"{config['out_dir']}/output_R2.fastq.gz")
+        r1=temp(f"{config['out_dir']}/output_R2.fastq")
     params:
         umi_start=config["runtime"]["umi_start"],
         umi_len=config["runtime"]["umi_len"],
@@ -141,23 +141,23 @@ rule stpipeline:
         star_index=config["reference"]["star_index"],
         gtf_file=config["reference"]["gtf_file"],
         bc_file=config["reference"]["barcode_file"],
-        out=directory({config['out_dir']}),
-        temp=directory(f"{config['out_dir']}/temp")
     output:
-        r1=(f"{config['out_dir']}/{config['project']}.bed")
+        r1=f"{config['out_dir']}/{config['project']}_expression.csv",
+        temp=directory(f"{config['out_dir']}/temp"),
     params:
+        out=config["out_dir"],
         stpipeline_id=config["project"],
         log_file=f"{config['out_dir']}/{config['project']}_log.txt"
     threads:
         config["threads"]
     shell:
         """
-        mkdir -p {input.out}
-        mkdir -p {input.temp}
+        mkdir -p {params.out}
+        mkdir -p {output.temp}
 
         st_pipeline_run \
-        --output-folder {input.out} \
-        --temp-folder {input.temp} \
+        --output-folder {params.out} \
+        --temp-folder {output.temp} \
         --ids {input.bc_file} \
         --threads {threads} \
         --ref-map {input.star_index} \

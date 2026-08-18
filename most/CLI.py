@@ -46,12 +46,9 @@ def main(
             check=True
         )
     finally:
-        print("hello")
-"""
-    finally:
         if os.path.exists(path):
             os.remove(path)
         if zpath and os.path.exists(zpath):
             os.remove(zpath)
-"""
+
             

@@ -223,22 +223,28 @@ def find_high_entropy_regions(
     return regions
 
 
-def filtered(regions,bc1_loc,bc2_loc):
+def filtered(regions, bc1_loc, bc2_loc, umi_len):
     filtered_regions = []
+
     for start, end in regions:
+        if end - start != umi_len:
+            raise ValueError(
+                f"UMI length error: region ({start}, {end}) "
+                f"has length {end - start}, expected {umi_len}"
+            )
 
         if end >= 117:
             continue
 
-        overlap_bc1 = not (end <= bc1_loc or start >= bc1_loc+8)
-
-        overlap_bc2 = not (end <= bc2_loc or start >= bc2_loc+8)
+        overlap_bc1 = not (end <= bc1_loc or start >= bc1_loc + 8)
+        overlap_bc2 = not (end <= bc2_loc or start >= bc2_loc + 8)
 
         if overlap_bc1 or overlap_bc2:
             continue
 
         filtered_regions.append((start, end))
-    return  filtered_regions
+
+    return filtered_regions
 
 def hamming(s1, s2):
 
@@ -279,7 +285,7 @@ def scan(cfg,method):
     MAX_READS = 100000
     fastq = cfg.sequence_file.file2
     barcode_file = cfg.reference.barcode_file
-
+    umi_len = cfg.advanced.umi_len
     seqs = read_fastq_head(fastq, MAX_READS)
     print(f"reads loaded: {len(seqs)}")
     read_len = len(seqs[0])
@@ -313,7 +319,7 @@ def scan(cfg,method):
         print(f"UMI candidate region: bp {start+1}-{end}")
         
     print("\n=== Filtered UMI regions ===")
-    filtered_regions = filtered(regions,bc1_loc,bc2_loc)
+    filtered_regions = filtered(regions,bc1_loc,bc2_loc,umi_len)
     umi_start = umi_end = umi_len = 0
     
     if method == "ATAC" or method == "DMT":
@@ -336,7 +342,7 @@ def scan(cfg,method):
             print(f"UMI may be located between bp {start+1}-{end}")
         umi_start, umi_end = filtered_regions[0]
    
-    umi_len = umi_end - umi_start 
+
     
 
     # -----------------------------------------------------

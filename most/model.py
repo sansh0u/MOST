@@ -23,6 +23,8 @@ DEFAULTS = {
     "rna_barcode_file":
         str(files("most.barcode") / "20240614_2500barcode_AB_update_RNA.txt"),
 
+    "UMI_len": 10,
+
     "hdist": 3,
 
     "rna_lib": "illumina",
@@ -115,6 +117,9 @@ class Advanced(BaseModel):
 
     UMI: Optional[str] = None
 
+    UMI_len: Optional[int] = \
+        DEFAULTS["UMI_len"]
+
     BC: Optional[str] = None
 
     hdist: int = \
@@ -161,7 +166,6 @@ class Runtime(BaseModel):
 
     umi_start: Optional[int] = None
 
-    umi_len: Optional[int] = None
 
 
 class Config(BaseModel):

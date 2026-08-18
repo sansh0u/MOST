@@ -248,7 +248,7 @@ def config_cal(cfg):
     cfg.runtime.seq_start = seq_start
 
     cfg.runtime.umi_start = umi_start
-    cfg.runtime.umi_len = umi_len
+
 
     runtime_path = (out_dir / "runtime.yaml")
 

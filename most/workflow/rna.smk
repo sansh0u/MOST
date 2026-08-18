@@ -101,7 +101,7 @@ rule dbit_qc:
         r1=temp(f"{config['out_dir']}/output_R2.fastq")
     params:
         umi_start=config["runtime"]["umi_start"],
-        umi_len=config["runtime"]["umi_len"],
+        umi_len=config["advanced"]["umi_len"],
         bc2_start=config["runtime"]["bc2_start"],
         bc2_end=config["runtime"]["bc2_end"],
         bc1_start=config["runtime"]["bc1_start"],

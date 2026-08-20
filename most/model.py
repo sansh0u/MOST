@@ -26,7 +26,7 @@ DEFAULTS = {
     "rna_barcode_file":
         str(files("most.barcode") / "20240614_2500barcode_AB_update_RNA.txt"),
 
-    "UMI_len": 10,
+    "umi_len": 10,
 
     "hdist": 3,
 
@@ -64,6 +64,7 @@ class SequenceFile(BaseModel):
     }
 
     file1: str
+
     file2: str
 
 
@@ -88,6 +89,7 @@ class Reference(BaseModel):
     @field_validator("barcode_file", mode="before")
     @classmethod
     def replace_defaults(cls, v):
+
         return v
 
     @field_validator("genome", mode="before")
@@ -95,9 +97,12 @@ class Reference(BaseModel):
     def check_genome(cls, v):
 
         if v is None:
-            raise ValueError("reference.genome is required")
+            raise ValueError(
+                "reference.genome is required"
+            )
 
         if isinstance(v, str):
+
             v = v.strip()
 
             if not v:
@@ -120,11 +125,11 @@ class Advanced(BaseModel):
 
     linker2: str = DEFAULTS["linker2"]
 
-    UMI: Optional[str] = None
+    umi: Optional[str] = None
 
-    umi_len: Optional[int] = DEFAULTS["UMI_len"]
+    umi_len: Optional[int] = DEFAULTS["umi_len"]
 
-    BC: Optional[str] = None
+    bc: Optional[str] = None
 
     hdist: int = DEFAULTS["hdist"]
 
@@ -139,18 +144,19 @@ class Advanced(BaseModel):
     def normalize_keys(cls, data):
 
         """
-        Make Advanced configuration keys case-insensitive.
+        Convert configuration keys to lowercase.
 
-        For example:
-            UMI_len -> umi_len
-            Umi_Len -> umi_len
-            umi_len -> umi_len
+        Examples:
+            UMI      -> umi
+            UMI_len  -> umi_len
+            Umi_Len  -> umi_len
+            BC       -> bc
         """
 
         if isinstance(data, dict):
 
             data = {
-                key.lower(): value
+                str(key).lower(): value
                 for key, value in data.items()
             }
 

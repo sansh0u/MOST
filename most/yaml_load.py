@@ -169,8 +169,8 @@ def config_cal(cfg):
         threads
     )
 
-    umi = cfg.advanced.UMI
-    bc = cfg.advanced.BC
+    umi = cfg.advanced.umi
+    bc = cfg.advanced.bc
 
     if umi and bc:
         umi_start, umi_len = convert_range(umi)

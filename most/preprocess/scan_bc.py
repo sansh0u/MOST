@@ -227,17 +227,32 @@ def filtered(regions, bc1_loc, bc2_loc, umi_len):
     filtered_regions = []
 
     for start, end in regions:
-        if end - start != umi_len:
-            raise ValueError(
-                f"UMI length error: region ({start}, {end}) "
-                f"has length {end - start}, expected {umi_len}"
-            )
 
+        # 只保留指定长度的 UMI
+        # 不符合长度的候选区域直接跳过
+        if end - start != umi_len:
+            print(
+                f"Skip UMI candidate region: "
+                f"({start}, {end}), "
+                f"length={end-start}, "
+                f"expected={umi_len}"
+            )
+            continue
+
+        # 限制 UMI 区域不能超过指定位置
         if end >= 117:
             continue
 
-        overlap_bc1 = not (end <= bc1_loc or start >= bc1_loc + 8)
-        overlap_bc2 = not (end <= bc2_loc or start >= bc2_loc + 8)
+        # barcode overlap
+        overlap_bc1 = not (
+            end <= bc1_loc or
+            start >= bc1_loc + 8
+        )
+
+        overlap_bc2 = not (
+            end <= bc2_loc or
+            start >= bc2_loc + 8
+        )
 
         if overlap_bc1 or overlap_bc2:
             continue
@@ -280,81 +295,156 @@ def scan_adapter_positions(seqs, query, max_mismatch, window):
 # -------------------------------
 # main
 # -------------------------------
-def scan(cfg,method):
+def scan(cfg, method):
 
     MAX_READS = 100000
+
     fastq = cfg.sequence_file.file2
     barcode_file = cfg.reference.barcode_file
+
+    # -----------------------------------------------------
+    # UMI length comes from YAML
+    # -----------------------------------------------------
     umi_len = cfg.advanced.umi_len
+
+    if umi_len is None:
+        raise ValueError(
+            "umi_len is not provided in YAML/config"
+        )
+
+    umi_len = int(umi_len)
+
+    print(f"Configured UMI length: {umi_len} bp")
+
+    # -----------------------------------------------------
+    # Read FASTQ
+    # -----------------------------------------------------
     seqs = read_fastq_head(fastq, MAX_READS)
+
     print(f"reads loaded: {len(seqs)}")
+
+    if not seqs:
+        raise ValueError("No reads found in FASTQ")
+
     read_len = len(seqs[0])
-    # barcode
+
+    # -----------------------------------------------------
+    # Barcode
+    # -----------------------------------------------------
     bc_set, bc_len = load_barcodes(barcode_file)
-    bc_hits = scan_positions_hash(seqs, bc_set, bc_len)
+
+    bc_hits = scan_positions_hash(
+        seqs,
+        bc_set,
+        bc_len
+    )
 
     ratio = bc_hits / len(seqs)
+
     idx = np.argsort(ratio)[-2:]
     idx.sort()
 
     bc2_loc, bc1_loc = idx
 
     print("\n=== Barcode ===")
-    print(f"bc2 starts at bp {bc2_loc+1}")
-    print(f"bc1 starts at bp {bc1_loc+1}")
+    print(f"bc2 starts at bp {bc2_loc + 1}")
+    print(f"bc1 starts at bp {bc1_loc + 1}")
 
+    # -----------------------------------------------------
+    # Entropy
+    # -----------------------------------------------------
     entropy, _ = global_entropy_profile(seqs)
-    #plot_entropy(entropy,bc1_loc,bc2_loc)
-    #print("\n=== Entropy Profile ===")
 
-    #for i, (e, b) in enumerate(zip(entropy, consensus)):
-
-        #print(f"{i}\t{e:.3f}\t{b}")
     entropy = np.array(entropy)
 
     print("\n=== UMI ===")
-    regions = find_high_entropy_regions(entropy,min_len=6)
-    
-    for start, end in regions:
-        print(f"UMI candidate region: bp {start+1}-{end}")
-        
-    print("\n=== Filtered UMI regions ===")
-    filtered_regions = filtered(regions,bc1_loc,bc2_loc,umi_len)
-    umi_start = umi_end = umi_len = 0
-    
-    if method == "ATAC" or method == "DMT":
-        if not filtered_regions:
-            print("No UMI region found.")
-            
-        else:
-            
-            for start, end in filtered_regions:
-                print(f"UMI may be located between bp {start+1}-{end}")
-            umi_start, umi_end = filtered_regions[0]
-            
-    elif method == "RNA":
-        if len(filtered_regions) != 1:
-            raise ValueError(
-                f"Expected exactly 1 UMI region, found {len(filtered_regions)}: {filtered_regions}"
-            )
-        
-        for start, end in filtered_regions:
-            print(f"UMI may be located between bp {start+1}-{end}")
-        umi_start, umi_end = filtered_regions[0]
-   
-
-    
 
     # -----------------------------------------------------
-    # output
+    # Find high entropy regions
+    # -----------------------------------------------------
+    regions = find_high_entropy_regions(
+        entropy,
+        min_len=6
+    )
+
+    for start, end in regions:
+        print(
+            f"UMI candidate region: "
+            f"bp {start + 1}-{end} "
+            f"(length={end-start})"
+        )
+
+    # -----------------------------------------------------
+    # Filter UMI regions
+    # -----------------------------------------------------
+    print("\n=== Filtered UMI regions ===")
+
+    filtered_regions = filtered(
+        regions,
+        bc1_loc,
+        bc2_loc,
+        umi_len
+    )
+
+    # 不要再把 umi_len 改成 0
+    umi_start = 0
+    umi_end = 0
+
+    # -----------------------------------------------------
+    # ATAC / DMT
+    # -----------------------------------------------------
+    if method == "ATAC" or method == "DMT":
+
+        if not filtered_regions:
+
+            print(
+                f"No valid {umi_len} bp UMI region found."
+            )
+
+        else:
+
+            for start, end in filtered_regions:
+
+                print(
+                    f"UMI may be located between "
+                    f"bp {start + 1}-{end}"
+                )
+
+            umi_start, umi_end = filtered_regions[0]
+
+    # -----------------------------------------------------
+    # RNA
+    # -----------------------------------------------------
+    elif method == "RNA":
+
+        if len(filtered_regions) != 1:
+
+            raise ValueError(
+                f"Expected exactly 1 UMI region, "
+                f"found {len(filtered_regions)}: "
+                f"{filtered_regions}"
+            )
+
+        start, end = filtered_regions[0]
+
+        print(
+            f"UMI may be located between "
+            f"bp {start + 1}-{end}"
+        )
+
+        umi_start = start
+        umi_end = end
+
+    # -----------------------------------------------------
+    # Output
     # -----------------------------------------------------
     return {
-        "bc2": bc2_loc,
-        "bc1": bc1_loc,
-        "bc_len": bc_len,
-        "read_len": read_len,
-        'umi_start': umi_start,
-        'umi_len': umi_len
+        "bc2": int(bc2_loc),
+        "bc1": int(bc1_loc),
+        "bc_len": int(bc_len),
+        "read_len": int(read_len),
+        "umi_start": int(umi_start),
+        "umi_len": int(umi_len)
     }
 
 def check_adapter(fastq,Adapter,mismatch):

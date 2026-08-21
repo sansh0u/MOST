@@ -97,7 +97,7 @@ def build_zumis_yaml(cfg,gtf_file,bc2_start,bc1_start,bc_len,umi_start,umi_len):
     )
 
     with as_file(
-        files("most.config") / "RNA.yaml"
+        files("most.config") / "zUMIs.yaml"
     ) as template:
 
         with open(template) as f:

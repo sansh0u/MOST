@@ -1,6 +1,6 @@
 package:
   name: most
-  version: 0.3.11
+  version: 0.3.11a
 
 source:
   path: .

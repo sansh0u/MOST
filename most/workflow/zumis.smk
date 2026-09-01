@@ -38,7 +38,7 @@ rule run_zumis:
         directory(f"{config['out_dir']}/zUMIS_output")
     shell:
         """
-        {input.zumis} \
+        bash {input.zumis} \
         -c\
         -y {input.zcfg}
         """

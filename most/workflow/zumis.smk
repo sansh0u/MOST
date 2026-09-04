@@ -35,7 +35,7 @@ rule run_zumis:
         r1=f"{config['out_dir']}/filtered_R1.fastq.gz",
         r2=f"{config['out_dir']}/filtered_R2.fastq.gz"
     output:
-        directory(f"{config['out_dir']}/zUMIS_output")
+        directory(f"{config['out_dir']}/zUMIs_output")
     shell:
         """
         bash {input.zumis} \

@@ -1,6 +1,6 @@
 rule all:
     input:
-        f"{config['out_dir']}/zUMIS_output"
+        f"{config['out_dir']}/zUMIs_output"
 
 
 rule qc:

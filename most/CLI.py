@@ -16,7 +16,8 @@ def get_version():
 def main(
     ctx: typer.Context,
     config_file: str = typer.Option(None,"--config","-c"),
-    version_flag: bool = typer.Option(False,"--version","-v",help="Show version and exit")
+    version_flag: bool = typer.Option(False,"--version","-v",help="Show version and exit"),
+    notemp: bool = typer.Option(False,"--notemp","-n",help="Do not delete temporary files")
 ):
 
     if version_flag:
@@ -27,22 +28,28 @@ def main(
         typer.echo(ctx.get_help())
         raise typer.Exit()
 
+
     cfg = load_yaml(config_file)
     method = cfg.method
     path, zpath = config_cal(cfg)
     snakefile = files("most") / "workflow" / f"{method.lower()}.smk"
+    
+    cmd = [
+        "snakemake",
+        "--snakefile",
+        str(snakefile),
+        "--configfile",
+        str(path),
+        "--cores",
+        str(cfg.threads),
+        "--printshellcmds"
+    ]
+    
+    if notemp:
+        cmd.append("--notemp")
     try:
         subprocess.run(
-            [
-                "snakemake",
-                "--snakefile",
-                str(snakefile),
-                "--configfile",
-                str(path),
-                "--cores",
-                str(cfg.threads),
-                "--printshellcmds"
-            ],
+            cmd,
             check=True
         )
     finally:

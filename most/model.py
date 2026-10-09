@@ -26,7 +26,7 @@ DEFAULTS = {
     "rna_barcode_file":
         str(files("most.barcode") / "20240614_2500barcode_AB_update_RNA.txt"),
 
-    "umi_len": 10,
+    "umi_len": None,
 
     "hdist": 3,
 
@@ -295,7 +295,9 @@ class Config(BaseModel):
 
     @model_validator(mode="after")
     def check_tools(self):
-
+        if self.method == "RNA":
+            if self.advanced.umi_len is None:
+                self.advanced.umi_len = 10
         if not self.reference.barcode_file:
 
             if self.method == "RNA":

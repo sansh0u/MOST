@@ -223,14 +223,14 @@ def find_high_entropy_regions(
     return regions
 
 
-def filtered(regions, bc1_loc, bc2_loc, umi_len):
+def filtered(regions, bc1_loc, bc2_loc, umi_len=None):
+
     filtered_regions = []
 
     for start, end in regions:
 
-        # 只保留指定长度的 UMI
-        # 不符合长度的候选区域直接跳过
-        if end - start != umi_len:
+        # 只有指定了 UMI 长度时，才检查长度
+        if umi_len is not None and end - start != umi_len:
             print(
                 f"Skip UMI candidate region: "
                 f"({start}, {end}), "

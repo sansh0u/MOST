@@ -173,17 +173,22 @@ def config_cal(cfg):
     bc = cfg.advanced.bc
 
     if umi and bc:
+    # 用户明确提供 UMI 和 BC 位置
         umi_start, umi_len = convert_range(umi)
         bc2_start, bc1_start, bc_len = parse_pair(bc)
         read_len = int(scan_len(cfg))
 
-    else:
-        print(
-            "No UMI/BC provided, auto detecting..."
-        )
-        result = scan(cfg, method)
+    elif bc and cfg.advanced.umi_len == 0:
+        # 用户明确表示没有 UMI，并提供了 BC 位置
+        bc2_start, bc1_start, bc_len = parse_pair(bc)
+        read_len = int(scan_len(cfg))
+        umi_start = 0
+        umi_len = 0
 
-        # 强制转python int
+    else:
+        # 未明确指定 UMI 位置或长度，沿用自动检测
+        print("No UMI/BC provided, auto detecting...")
+        result = scan(cfg, method)
 
         bc2_start = int(result["bc2"])
         bc1_start = int(result["bc1"])

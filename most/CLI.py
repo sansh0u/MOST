@@ -17,7 +17,8 @@ def main(
     ctx: typer.Context,
     config_file: str = typer.Option(None,"--config","-c"),
     version_flag: bool = typer.Option(False,"--version","-v",help="Show version and exit"),
-    notemp: bool = typer.Option(False,"--notemp","-n",help="Do not delete temporary files")
+    notemp: bool = typer.Option(False,"--notemp","-n",help="Do not delete temporary files"),
+    
 ):
 
     if version_flag:

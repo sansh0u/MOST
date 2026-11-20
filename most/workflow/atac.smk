@@ -119,7 +119,8 @@ rule chromap:
         b_file=f"{config['out_dir']}/output_R2.fastq.gz",
         index_file=config['reference']['chromap_index'],
         fa_file=config['reference']['fa_file'],
-        bc_file=config['reference']['barcode_file']
+        bc_file=config['reference']['barcode_file'],
+        summary=f"{config['out_dir']}/summary.txt"
     output:
         bed=temp(f"{config['out_dir']}/{config['project']}.bed")
     threads:
@@ -135,7 +136,8 @@ rule chromap:
         -b {input.b_file} \
         --barcode-whitelist {input.bc_file} \
         -t {threads} \
-        -o {output.bed}
+        -o {output.bed} \
+        --summary {output.summary}
         """
 
 rule sort_bed:

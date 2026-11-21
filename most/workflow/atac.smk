@@ -119,10 +119,11 @@ rule chromap:
         b_file=f"{config['out_dir']}/output_R2.fastq.gz",
         index_file=config['reference']['chromap_index'],
         fa_file=config['reference']['fa_file'],
-        bc_file=config['reference']['barcode_file'],
-        summary=f"{config['out_dir']}/summary.txt"
+        bc_file=config['reference']['barcode_file']
+        
     output:
-        bed=temp(f"{config['out_dir']}/{config['project']}.bed")
+        bed=temp(f"{config['out_dir']}/{config['project']}.bed"),
+        summary=f"{config['out_dir']}/summary.csv"
     threads:
         config["threads"]
     shell:
@@ -187,3 +188,34 @@ rule tabix_bed:
         -p bed \
         {input.gz}
         """
+
+rule atac_qc_h5ad:
+    input:
+        fragments=f"{config['out_dir']}/{config['project']}_sorted.bed.gz",
+        summary=f"{config['out_dir']}/summary.csv"
+    output:
+        h5ad=f"{config['out_dir']}/{config['project']}.h5ad",
+        fragment_size=f"{config['out_dir']}/QC/fragment_size_distribution.png",
+        tsse=f"{config['out_dir']}/QC/tss_enrichment.png",
+        preseq=f"{config['out_dir']}/QC/preseq_library_complexity.png",
+        preseq_tsv=f"{config['out_dir']}/QC/preseq_library_complexity.tsv",
+        frip=f"{config['out_dir']}/QC/estimated_frip.png"
+    params:
+        outdir=f"{config['out_dir']}/QC",
+        bin_size=5000,
+        genome=config["reference"]["genome"]
+    threads:
+        config["threads"]
+    run:
+        import os
+        os.makedirs(params.outdir, exist_ok=True)
+        from most.visual.translate import atac_qc_h5ad
+        atac_qc_h5ad(
+            input.fragments,
+            input.summary,
+            output.h5ad,
+            params.outdir,
+            params.bin_size,
+            threads,
+            params.genome
+        )
